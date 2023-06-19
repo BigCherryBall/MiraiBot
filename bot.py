@@ -2,51 +2,19 @@ import re
 import http.client
 import json
 import sys
-
 import threading
-import random
-import time
-
 from event import event
 import feature as f
-# 写爬虫
-import requests
-import base64
 import asyncio
 import schedule
-
-__version__ = 4.1
-
-# 4.0添加聊天功能，取消语言学习模块，数据库不用postgresql了，改用es
-# 图片传输只能png的，jpg只能手机端能看到
-
-# 使用代理，openai需要用到代理
 import os
 
+# 使用代理，openai需要用到代理
 os.environ["HTTP_PROXY"] = 'http://127.0.0.1:7078'
 os.environ["HTTPS_PROXY"] = 'http://127.0.0.1:7078'
 
-dic_group = {}  # 到时候再考虑用这个来做什么吧
-dic_private = {}
-dic_m = {}
 
-# 4 丸子来一张 5 丸子\n6 丸子 查询作者 千式部\n7 丸子 ID 8396713 10\n8 丸子 ID 8396713 all\n9 丸子 删除 千式部.zip\n10 丸子 tag 水着 热度排 前3张
-# 庙檐开发，目前功能贫瘠，只有学习语言功能，第一次输入如‘字段1 & 字段2’的文字，丸子会响应并学会字段1;2.输入:十连;3.输入抽up
-
-all_pic_d = {}
-
-allow_id = {2655602003}  # primary使用
-
-
-# lock=threading.Lock()#来个线程锁
-# lock_chat=threading.Lock()#再来个线程锁
-# AInum=1#临界区资源
-
-# line=[]任务线，完全没写
-
-
-# 丸子聊天说明：“丸子”后面跟参数。完整输出会把问题以及得分打印出来
-
+# 庙檐开发，樱桃大丸子修改，目前功能有ChatGPT,防撤回，发本地图，中国象棋，角色扮演
 
 class bot():
     def __init__(self, address, port=5700, authKey="INITKEY61xgs0xw"):
@@ -77,7 +45,6 @@ class bot():
         conn = self.conn
 
         def send_text(_id, text):
-            # print('节点106')
             sessionKey = self.sessionKey
             js = json_deal.build_text_json(sessionKey, _id, text)
             # print(js)
@@ -127,10 +94,9 @@ class bot():
         self.conn.request('POST', '/sendGroupMessage', js)
         response = self.conn.getresponse()
         data = response.read().decode('utf-8')
-        print(data)
 
+    #  防撤回功能需要
     def get_msg_by_id(self, location_id, msg_id):
-        print('节点154')
         requ = {}
         requ['sessionKey'] = self.sessionKey
         requ['messageId'] = msg_id
@@ -168,18 +134,18 @@ class bot():
                         self.send_msg(ev=ev, id=ev.location_id, message="巴~")
                     continue
                 # 角色扮演
-                if f.change_role(self, ev, ev.message):
+                if f.change_role(self, ev):
                     continue
                 # 系统命令
                 if f.system_command(self, ev):
                     continue
-                # print('\n标记1\n')
+                # -----以上功能不需要分群聊还是私聊，接下来的功能需要分群聊还是私聊----
                 if ev.type == 'primary':
                     print(ev.location_id, '->', ev.message)
                     if '来' in ev.message and '张' in ev.message:
                         pat = re.compile(
                             '^.*(来一?张.+)$'
-                        )  # 正则表达式
+                        )
                         it = re.findall(pat, ev.message)
                         if it:
                             f.send_local_image(self, ev, it[0])
@@ -198,14 +164,11 @@ class bot():
                     # 发图
                     if f.send_local_image(self, ev, item):
                         continue
-                    print('节点198')
+                    # 最后交给gpt
                     f.normal_chat(self, ev, item)
             except Exception as e:
                 print('except节点202')
                 print(e)
-
-    def call_help(self, ev: event):
-        self.send_msg(ev, ev.location_id, 'text', dic_m["菜单"])
 
     async def fetch_message(self):
         conn = self.conn
