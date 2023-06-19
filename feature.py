@@ -75,12 +75,12 @@ def normal_chat(b: bot, ev: event, message: str):
         b.send_msg(ev, ev.location_id, 'text', error_answer[random.randint(0, len(error_answer))])
 
 
-def change_role(b: bot, ev: event, message: str):
+def change_role(b: bot, ev: event):
     if ev.message == '身份列表' or ev.message == '角色列表':
         b.send_msg(ev, ev.location_id, 'text', '下面就是所有的身份啦:' + (str(list(role.keys()))).replace('\'', ''))
         return True
     pattern = re.compile('^丸?子?[ ,，]?变[为成]?一?[只个名]?(...?.?.?)$')  # 目前指支持两个字的角色，所以这样写
-    roler = pattern.findall(message)
+    roler = pattern.findall(ev.message)
     if not roler:
         return False
     if not power['角色扮演']:
