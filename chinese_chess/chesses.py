@@ -3,7 +3,7 @@ from chinese_chess.chess_except import CommandExcept, MoveExcept
 from chinese_chess.enum import Team
 from PIL import Image
 
-pic_root = r'D:\MyQQBot\Mikky_cat-main\chinese_chess\my_chess' + '\\'
+pic_root = r'D:\MyQQBot\MiraiBot\chinese_chess\my_chess' + '\\'
 
 
 class Horse(Chess):  # 马
@@ -20,12 +20,10 @@ class Horse(Chess):  # 马
         if chess and chess.team == self.team:
             raise MoveExcept()
         target = mp[new_x][new_y]
-        if target and target.team != self.team and (target.name == '将' or target.name == '帅'):
-            target.on_destroy()
         mp[new_x][new_y] = mp[x][y]
         mp[x][y] = None
         self.update_position(new_x, new_y)
-        return x,y,new_x,new_y
+        return x, y, new_x, new_y, target
 
     def is_legal(self, command: str, mp):
         forward_or_not = command[0] == '进'
@@ -85,34 +83,31 @@ class Car(Chess):  # 车
 
     def move(self, command: str, mp):
         x, y, new_x, new_y = self.is_legal(command, mp)
-        chess = mp[new_x][new_y]
-        if chess and chess.team == self.team:
+        target = mp[new_x][new_y]
+        if target and target.team == self.team:
             raise MoveExcept()
         if x == new_x:
             if new_y > y:
                 for j in range(y + 1, new_y):
                     if mp[x][j]:
-                        raise MoveExcept
+                        raise MoveExcept()
             else:
                 for j in range(new_y + 1, y):
                     if mp[x][j]:
-                        raise MoveExcept
+                        raise MoveExcept()
         else:
             if new_x > x:
                 for j in range(x + 1, new_x):
                     if mp[j][y]:
-                        raise MoveExcept
+                        raise MoveExcept()
             else:
                 for j in range(new_x + 1, x):
                     if mp[j][y]:
-                        raise MoveExcept
-        target = mp[new_x][new_y]
-        if target and target.team != self.team and (target.name == '将' or target.name == '帅'):
-            target.on_destroy()
+                        raise MoveExcept()
         mp[new_x][new_y] = mp[x][y]
         mp[x][y] = None
         self.update_position(new_x, new_y)
-        return x, y, new_x, new_y
+        return x, y, new_x, new_y, target
 
     def is_legal(self, command: str, mp):
         x = self.transform.position.x
@@ -146,15 +141,15 @@ class Elephant(Chess):  # 相象
 
     def move(self, command: str, mp):
         x, y, new_x, new_y = self.is_legal(command, mp)
-        chess = mp[new_x][new_y]
-        if chess and chess.team == self.team:
+        target = mp[new_x][new_y]
+        if target and target.team == self.team:
             raise CommandExcept()
         if mp[int((x + new_x) / 2)][int((y + new_y) / 2)]:  # 这里会不会因为float转int导致坐标出错
             raise MoveExcept()
         mp[new_x][new_y] = mp[x][y]
         mp[x][y] = None
         self.update_position(new_x, new_y)
-        return x, y, new_x, new_y
+        return x, y, new_x, new_y, target
 
     def is_legal(self, command: str, mp):
         forward_or_not = command[0] == '进'
@@ -192,12 +187,10 @@ class Soldier(Chess):  # 兵卒
     def move(self, command: str, mp):
         x, y, new_x, new_y = self.is_legal(command, mp)
         target = mp[new_x][new_y]
-        if target and target.team != self.team and (target.name == '将' or target.name == '帅'):
-            target.on_destroy()
         mp[new_x][new_y] = mp[x][y]
         mp[x][y] = None
         self.update_position(new_x, new_y)
-        return x, y, new_x, new_y
+        return x, y, new_x, new_y, target
 
     def is_legal(self, command: str, mp):
         direction = command[0]
@@ -266,13 +259,13 @@ class Guard(Chess):  # 士
 
     def move(self, command: str, mp):
         x, y, new_x, new_y = self.is_legal(command, mp)
-        chess = mp[new_x][new_y]
-        if chess and chess.team == self.team:
+        target = mp[new_x][new_y]
+        if target and target.team == self.team:
             raise CommandExcept()
         mp[new_x][new_y] = mp[x][y]
         mp[x][y] = None
         self.update_position(new_x, new_y)
-        return x, y, new_x, new_y
+        return x, y, new_x, new_y, target
 
     def is_legal(self, command: str, mp):
         direction = command[0]
@@ -310,12 +303,10 @@ class Artillery(Chess):  # 炮，这个好难。。
     def move(self, command: str, mp):
         x, y, new_x, new_y = self.is_legal(command, mp)
         target = mp[new_x][new_y]
-        if target and target.team != self.team and (target.name == '将' or target.name == '帅'):
-            target.on_destroy()
         mp[new_x][new_y] = mp[x][y]
         mp[x][y] = None
         self.update_position(new_x, new_y)
-        return x, y, new_x, new_y
+        return x, y, new_x, new_y, target
 
     def is_legal(self, command: str, mp):
         x = self.transform.position.x
@@ -388,7 +379,7 @@ class Artillery(Chess):  # 炮，这个好难。。
 
 
 class Commander(Chess):  # 将帅
-    def __init__(self, team: str, x: int, y: int, control):
+    def __init__(self, team: str, x: int, y: int):
         name = '帅'
         path = pic_root + 'red_king.jpg'
         if team == Team.Black:
@@ -396,24 +387,18 @@ class Commander(Chess):  # 将帅
             path = pic_root + 'black_king.jpg'
         img = Image.open(path)
         super(Commander, self).__init__(team, img, x, y, name)
-        self.game_control = control
 
     def move(self, command: str, mp):
-        king = None
         x, y, new_x, new_y = self.is_king_to_king(command, mp)
         if x == -1:
             x, y, new_x, new_y = self.is_legal(command, mp)
-        else:
-            king = mp[new_x][new_y]
-        chess = mp[new_x][new_y]
-        if chess and chess.team == self.team:
+        target = mp[new_x][new_y]
+        if target and target.team == self.team:
             raise CommandExcept()
         mp[new_x][new_y] = mp[x][y]
         mp[x][y] = None
         self.update_position(new_x, new_y)
-        if king:
-            king.on_destroy()
-        return x, y, new_x, new_y
+        return x, y, new_x, new_y, target
 
     def is_legal(self, command: str, mp):
         direction = command[0]
@@ -421,7 +406,6 @@ class Commander(Chess):  # 将帅
         distance = 1
         x = self.transform.position.x
         y = self.transform.position.y
-        target_y = 0
         _y = 0
         _x = 0
         if direction == '平':
@@ -470,10 +454,3 @@ class Commander(Chess):  # 将帅
             if king and (king.name == '将' or king.name == '帅'):
                 return x, y, x + _x, y
         return -1, -1, -1, -1
-
-    def on_destroy(self):
-        winner = Team.Red
-        if self.team == Team.Red:
-            winner = Team.Black
-        # GameControl.set_over(winner)  # 告诉游戏控制器胜利方
-        self.game_control.set_over(winner)

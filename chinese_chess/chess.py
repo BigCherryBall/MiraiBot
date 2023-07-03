@@ -2,16 +2,17 @@ from abc import abstractmethod
 
 from PIL import Image
 from chinese_chess.enum import Team
-from chinese_chess.component import Transform
+from chinese_chess.component import Transform, Vector2
 
 
 class Chess:
 
-    def __init__(self, team: str, img: Image, x: int, y: int, name: str = ''):
+    def __init__(self, team: str, img: Image, x: int, y: int, name: str):
         self.image = img  # 棋子的图片,子类传过来~
         self.name: str = name  # 棋子名字，子类传过来~
         self.team: str = team  # 阵营，子类传过来~
         self.transform: Transform = Transform(self, x, y)  # 变换组件,初始坐标进行设置
+        self.init_pos = Vector2(x, y)  # 初始位置,保持不变
         self.one_hot = ''  # 为后续人机对战，需要将棋子进行one-hot编码挖坑
 
     @abstractmethod
@@ -29,6 +30,11 @@ class Chess:
         pos = self.transform.position
         pos.x = new_x
         pos.y = new_y
+
+    def back_to_init_pos(self):
+        pos = self.transform.position
+        pos.x = self.init_pos.x
+        pos.y = self.init_pos.y
 
     def __repr__(self):  # 方便print
         return self.team + self.name
@@ -83,7 +89,8 @@ class Chess:
             else:
                 return 8
 
-    def get_dis_by_num(self, num):
+    @staticmethod
+    def get_dis_by_num(num):
         if num == '1' or num == '一':
             return 1
         elif num == '2' or num == '二':
