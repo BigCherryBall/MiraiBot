@@ -1,7 +1,10 @@
+import math
 import random
 import re
+import time
+from tool import get_time_str
+from chinese_chess.chess_except import ChessNotFindExcept, BackExcept
 from chinese_chess.chesses import *
-from chinese_chess.component import Vector2
 from chinese_chess.enum import Team, Turn
 
 
@@ -21,65 +24,106 @@ class GameControl:
                     [None, None, None, None, None, None, None, None, None],
                     [None, None, None, None, None, None, None, None, None]]
 
+        # 棋子对象池,所有棋盘共享,类的内部可访问，外部无法访问。只读不改。
+        self.__chess_list = [
+            # -------------黑方初始化------------------
+            Car(Team.Black, 0, 0),
+            Horse(Team.Black, 0, 1),
+            Elephant(Team.Black, 0, 2),
+            Guard(Team.Black, 0, 3),
+            Commander(Team.Black, 0, 4),
+            Guard(Team.Black, 0, 5),
+            Elephant(Team.Black, 0, 6),
+            Horse(Team.Black, 0, 7),
+            Car(Team.Black, 0, 8),
+            Artillery(Team.Black, 2, 1),
+            Artillery(Team.Black, 2, 7),
+            Soldier(Team.Black, 3, 0),
+            Soldier(Team.Black, 3, 2),
+            Soldier(Team.Black, 3, 4),
+            Soldier(Team.Black, 3, 6),
+            Soldier(Team.Black, 3, 8),
+            # -------------红方初始化------------------
+            Car(Team.Red, 9, 0),
+            Horse(Team.Red, 9, 1),
+            Elephant(Team.Red, 9, 2),
+            Guard(Team.Red, 9, 3),
+            Commander(Team.Red, 9, 4),
+            Guard(Team.Red, 9, 5),
+            Elephant(Team.Red, 9, 6),
+            Horse(Team.Red, 9, 7),
+            Car(Team.Red, 9, 8),
+            Artillery(Team.Red, 7, 1),
+            Artillery(Team.Red, 7, 7),
+            Soldier(Team.Red, 6, 0),
+            Soldier(Team.Red, 6, 2),
+            Soldier(Team.Red, 6, 4),
+            Soldier(Team.Red, 6, 6),
+            Soldier(Team.Red, 6, 8)
+        ]
         # 该谁走棋了
         self.turn = Turn.Red
         # 是否结束，没有为None，结束了就为胜利方
         self.game_over = None
         # 对弈状态:not_begin,has_began,pre
         self.status = 'not_begin'
-        # 记录每次行棋的开始位置和目标位置,以便画箭头
+        # 记录每次行棋的开始位置和目标位置,以便提示和悔棋
         self.__x = -1
         self.__y = -1
         self.__new_x = -1
         self.__new_y = -1
+        # 每次行棋的目标位置的棋子记录:
+        self.be_eat_chess = None
+        # 悔棋合法
+        self.back_is_legal = False
+        # 回合计数
+        self.round_count = 0
         # 随机数种子,用于区分不同的群
         self.seed = str(seed)
+        # 开始和结束时间
+        self.start_time = 0
+        self.end_time = 0
+        # 步数统计
+        self.step = 0
+        # 上一步行棋时间，用于单步计时
+        self.last_step_time = 0
+        # 当前步用时
+        self.current_step_time = 0
 
     # 将空棋盘变为初始化棋盘
     def init_map(self):
         for i in range(0, 10):
             for j in range(0, 9):
                 self.map[i][j] = None
+        # 该谁走棋了
         self.turn = Turn.Red
+        # 是否结束，没有为None，结束了就为胜利方
         self.game_over = None
-        # -------------黑方初始化------------------
-        self.map[0][0] = Car(Team.Black, 0, 0)
-        self.map[0][1] = Horse(Team.Black, 0, 1)
-        self.map[0][2] = Elephant(Team.Black, 0, 2)
-        self.map[0][3] = Guard(Team.Black, 0, 3)
-        self.map[0][4] = Commander(Team.Black, 0, 4, self)
-        self.map[0][5] = Guard(Team.Black, 0, 5)
-        self.map[0][6] = Elephant(Team.Black, 0, 6)
-        self.map[0][7] = Horse(Team.Black, 0, 7)
-        self.map[0][8] = Car(Team.Black, 0, 8)
-
-        self.map[2][1] = Artillery(Team.Black, 2, 1)
-        self.map[2][7] = Artillery(Team.Black, 2, 7)
-
-        self.map[3][0] = Soldier(Team.Black, 3, 0)
-        self.map[3][2] = Soldier(Team.Black, 3, 2)
-        self.map[3][4] = Soldier(Team.Black, 3, 4)
-        self.map[3][6] = Soldier(Team.Black, 3, 6)
-        self.map[3][8] = Soldier(Team.Black, 3, 8)
-        # -------------红方初始化------------------
-        self.map[9][0] = Car(Team.Red, 9, 0)
-        self.map[9][1] = Horse(Team.Red, 9, 1)
-        self.map[9][2] = Elephant(Team.Red, 9, 2)
-        self.map[9][3] = Guard(Team.Red, 9, 3)
-        self.map[9][4] = Commander(Team.Red, 9, 4, self)
-        self.map[9][5] = Guard(Team.Red, 9, 5)
-        self.map[9][6] = Elephant(Team.Red, 9, 6)
-        self.map[9][7] = Horse(Team.Red, 9, 7)
-        self.map[9][8] = Car(Team.Red, 9, 8)
-
-        self.map[7][1] = Artillery(Team.Red, 7, 1)
-        self.map[7][7] = Artillery(Team.Red, 7, 7)
-
-        self.map[6][0] = Soldier(Team.Red, 6, 0)
-        self.map[6][2] = Soldier(Team.Red, 6, 2)
-        self.map[6][4] = Soldier(Team.Red, 6, 4)
-        self.map[6][6] = Soldier(Team.Red, 6, 6)
-        self.map[6][8] = Soldier(Team.Red, 6, 8)
+        # 对弈状态:not_begin,has_began,pre
+        self.status = 'has_began'
+        # 记录每次行棋的开始位置和目标位置,以便提示和悔棋
+        self.__x = -1
+        self.__y = -1
+        self.__new_x = -1
+        self.__new_y = -1
+        # 每次行棋的目标位置的棋子记录:
+        self.be_eat_chess = None
+        # 悔棋合法
+        self.back_is_legal = False
+        # 回合计数
+        self.round_count = 0
+        # 开始时间
+        self.start_time = time.time()
+        # 步数统计
+        self.step = 0
+        # 上一步行棋时刻，用于单步计时
+        self.last_step_time = self.start_time
+        # 当前步用时
+        self.current_step_time = 0
+        # -------------从棋子对象池里面读取数据------------------
+        for chess in self.__chess_list:
+            chess.back_to_init_pos()
+            self.map[chess.init_pos.x][chess.init_pos.y] = chess
 
     # 从机器人那里接受到的走棋命令后，调用这个函数
     def move_chess(self, command: str):  # 命令的长度为4
@@ -92,11 +136,22 @@ class GameControl:
         chess = self.get_chess(command[:2], right1, right2)  # 命令的前两个字确定棋子
         if not chess:
             raise CommandExcept()
-        x, y, new_x, new_y = chess.move(command[2:], self.map)  # 命令的后两个字移动棋子
-        self.__x = x
-        self.__y = y
-        self.__new_x = new_x
-        self.__new_y = new_y
+        self.__x, self.__y, self.__new_x, self.__new_y, *be_eat_chess = chess.move(command[2:], self.map)  # 命令的后两个字移动棋子
+        if be_eat_chess and be_eat_chess[0]:
+            self.be_eat_chess = be_eat_chess[0]
+            if be_eat_chess[0].name == '将' or be_eat_chess[0] == '帅':
+                self.set_over(self.turn)
+                self.round_count = math.ceil(self.step / 2)
+                self.end_time = int(time.time())
+                self.current_step_time = self.end_time - self.last_step_time
+        else:
+            self.be_eat_chess = None
+        # 更新变量
+        self.back_is_legal = True
+        self.step += 1
+        current_time = time.time()
+        self.current_step_time = current_time - self.last_step_time
+        self.last_step_time = current_time
         if self.turn == Turn.Red:
             self.turn = Turn.Black
         else:
@@ -115,7 +170,7 @@ class GameControl:
             if chess:
                 return chess
             else:
-                raise CommandExcept()
+                raise ChessNotFindExcept()
         if right2:
             chess1 = None
             chess2 = None
@@ -139,7 +194,7 @@ class GameControl:
                     break
 
             if not (chess1 and chess2):
-                raise CommandExcept()
+                raise ChessNotFindExcept()
             if self.turn == Turn.Red:
                 if forward_or_behind == '前':
                     return chess1
@@ -207,20 +262,17 @@ class GameControl:
         else:
             begin = Image.open(pic_root + 'red_begin.jpg')
             end = Image.open(pic_root + 'red_end.jpg')
-        m.paste(begin, (8 + self.__y * 80, 8 + self.__x * 80))
-        m.paste(end, (4 + self.__new_y * 80, 4 + self.__new_x * 80))
+        m.paste(begin, (8 + self.__y * 80, 18 + self.__x * 80))
+        m.paste(end, (4 + self.__new_y * 80, 14 + self.__new_x * 80))
         # 再画棋子
         for i in range(0, 10):
             for j in range(0, 9):
                 chess = self.map[i][j]
                 if chess:  # 如果不为None
-                    m.paste(chess.image, (8 + j * 80, 8 + i * 80))
+                    m.paste(chess.image, (8 + j * 80, 18 + i * 80))
         path = pic_root + self.seed + '.jpg'
         m.save(path)
         return path
-
-    def get_over(self):
-        return self.game_over
 
     def set_over(self, winner: str):
         if winner:
@@ -231,13 +283,35 @@ class GameControl:
         else:
             self.game_over = None
 
-    def set_begin_pos(self, x: int, y: int):
-        self.__x = x
-        self.__y = y
+    def back_to_last_step(self) -> None:
+        if not self.back_is_legal:
+            raise BackExcept()
+        # 改变轮次
+        if self.turn == Turn.Red:
+            self.turn = Turn.Black
+        else:
+            self.turn = Turn.Red
+        # 替换棋子
+        self.map[self.__x][self.__y] = self.map[self.__new_x][self.__new_y]
+        self.map[self.__x][self.__y].update_position(self.__x, self.__y)
+        self.map[self.__new_x][self.__new_y] = self.be_eat_chess
+        # 更新坐标
+        x = self.__x
+        y = self.__y
+        self.__x = self.__new_x
+        self.__y = self.__new_y
+        self.__new_x = x
+        self.__new_y = y
+        # 被吃的棋子
+        self.be_eat_chess = None
+        # 不能连续悔棋
+        self.back_is_legal = False
+        # 步数
+        self.step -= 1
 
-    def set_end_pos(self, new_x, new_y):
-        self.__new_x = new_x
-        self.__new_y = new_y
+    def getTotalTime(self) -> str:
+        total_second = int(time.time() - self.start_time)
+        return get_time_str(total_second)
 
 
 if __name__ == '__main__':

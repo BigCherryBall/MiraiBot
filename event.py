@@ -1,3 +1,10 @@
+class Type:
+    normal = 'normal'
+    recall = 'recall'
+    leave = 'leave'
+    join = 'join'
+
+
 class Sort:
     Text = '文'
     Picture = '图'
@@ -8,13 +15,15 @@ class Sort:
 
 class event:
     def __init__(self, i):
-        self.message = None
+        self.message = ''
         self.image = None
-        self.at = None
+        self.at = 0
+        self.face = None
         self.permission = None
-        self.memberName = None
+        self.sender_name = None
         self.sender_id = None
         self.location_id = None
+        self.where = None
         self.type = None
         self.msg_id = None
         t = i['type']
@@ -22,56 +31,77 @@ class event:
             self.recall(i)
         elif t == 'FriendMessage' or t == 'TempMessage' or t == 'StrangerMessage' or t == 'GroupMessage':
             self.chat_event(i)
+        elif t == 'MemberLeaveEventQuit' or t == 'MemberLeaveEventKick':
+            self.leave_group(i)
+        elif t == 'MemberJoinEvent':
+            self.join_group(i)
         else:
             self.other()
 
-    def chat_event(self, i):
+    def chat_event(self, i):  # 只处理文字消息
+        if len(i['messageChain']) > 4:
+            self.other()
+            return
         self.msg_id = i['messageChain'][0]['id']
-        self.at = False
-        if i['type'] == 'FriendMessage' or i['type'] == 'TempMessage' or i['type'] == 'StrangerMessage':
-            self.type = 'primary'
-            self.location_id = i['sender']['id']
-            self.sender_id = self.location_id
-            self.memberName = i['sender']['remark']
-            if not self.memberName:
-                self.memberName = i['sender']['nickname']
-        elif i['type'] == 'GroupMessage':
-            self.type = 'group'
+        self.type = Type.normal
+        if i['type'] == 'GroupMessage':
+            self.where = 'group'
             self.location_id = i['sender']['group']['id']
             self.sender_id = i['sender']['id']
-            # MemberMuteEvent不处理
-            self.memberName = i['sender']['memberName']
+            self.sender_name = i['sender']['memberName']
+            self.permission = i['sender']['permission']
+        else:
+            self.where = 'primary'
+            self.location_id = i['sender']['id']
+            self.sender_id = self.location_id
+            self.sender_name = i['sender']['remark']
+            if not self.sender_name:
+                self.sender_name = i['sender']['nickname']
         if self.sender_id == 2655602003:
             self.permission = "OWNER"
-        else:
-            self.permission = 'MEMBER'
-        message_type = i['messageChain'][1]['type']  # 这里要改，不能只处理第一条，但可以只处理前两条
-        # if(self.message_type=='Face'):
-        #     self.message=i['messageChain'][1]['faceId']
-        if message_type == 'Plain':
-            self.message = i['messageChain'][1]['text']
-        elif message_type == 'At' and int(i['messageChain'][1]['target']) == 1969712698:
-            self.at = True
-            self.message = i['messageChain'][2]['text']  # at符号再往后面跟一个
-        if len(i['messageChain']) == 3:
-            message_type = i['messageChain'][2]['type']
-            if message_type == 'Image':
-                self.image = i['messageChain'][2]['url']
+
+        messageChain = i['messageChain']
+        for msg in messageChain:
+            message_type = msg['type']
+            if message_type == 'Plain':
+                text = msg['text']
+                if text == ' ':
+                    continue
+                elif text[0] == ' ':
+                    text = text[1:]
+                self.message += text
+            elif message_type == 'Image':
+                self.image = msg['url']  # 图片就暂时这样了
+            elif message_type == 'At':
+                self.at = msg['target']
+            elif message_type == 'Face':
+                self.face = msg['name']
 
     def recall(self, i):
         self.msg_id = i['messageId']
-        self.at = False
         self.location_id = i['group']['id']
-        self.type = 'group'
+        self.where = 'group'
+        self.type = Type.recall
         self.sender_id = i['authorId']
-        self.memberName = i['operator']['memberName']
+        self.sender_name = i['operator']['memberName']
         if self.sender_id == 2655602003:
             self.permission = "OWNER"
         else:
             self.permission = i['operator']['permission']
-        self.image = ''
 
-        self.message = ''
+    def leave_group(self, i):
+        self.type = Type.leave
+        self.location_id = i['member']['group']['id']
+        self.sender_id = i['member']['id']
+        self.sender_name = i['member']['memberName']
+        self.where = 'group'
+    
+    def join_group(self, i):
+        self.where = 'group'
+        self.type = Type.join
+        self.sender_id = i['member']['id']
+        self.sender_name = i['member']['memberName']
+        self.location_id = i['member']['group']['id']
 
     def other(self):
-        self.type = ''
+        pass

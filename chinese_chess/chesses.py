@@ -3,7 +3,7 @@ from chinese_chess.chess_except import CommandExcept, MoveExcept
 from chinese_chess.enum import Team
 from PIL import Image
 
-pic_root = r'D:\MyQQBot\MiraiBot\chinese_chess\my_chess' + '\\'
+pic_root = r'/home/Ying/mirai/MiraiBot/chinese_chess/my_chess' + '/'
 
 
 class Horse(Chess):  # 马
@@ -35,7 +35,7 @@ class Horse(Chess):  # 马
         y = self.transform.position.y
         _x = 1
         _y = target_y - y
-        is_lega = True
+        is_lega = True  # 是否撇脚
         if abs(_y) != 1 and abs(_y) != 2:
             raise CommandExcept()
         if self.team == Team.Red:
@@ -104,6 +104,9 @@ class Car(Chess):  # 车
                 for j in range(new_x + 1, x):
                     if mp[j][y]:
                         raise MoveExcept()
+        target = mp[new_x][new_y]
+        if target and target.team != self.team and (target.name == '将' or target.name == '帅'):
+            target.on_destroy()
         mp[new_x][new_y] = mp[x][y]
         mp[x][y] = None
         self.update_position(new_x, new_y)
