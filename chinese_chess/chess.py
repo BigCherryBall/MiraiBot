@@ -1,13 +1,11 @@
 from abc import abstractmethod
-
-from PIL import Image
 from chinese_chess.enum import Team
 from chinese_chess.component import Vector2
 
 
 class Chess:
-    def __init__(self, team: str, img: Image, x: int, y: int, name: str):
-        self.image: Image = img  # 棋子的图片,子类传过来~
+    def __init__(self, team: str, img: str, x: int, y: int, name: str):
+        self.image: str = img  # 棋子的图片,子类传过来~
         self.name: str = name  # 棋子名字，子类传过来~
         self.team: str = team  # 阵营，子类传过来~
         self.pos: Vector2 = Vector2(x, y)  # 变换组件,初始坐标进行设置

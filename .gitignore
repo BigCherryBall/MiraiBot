@@ -5,4 +5,4 @@ temp
 config.yml
 fun.py
 __pycache__
-chinese_chess/test.pyq
+chinese_chess/test.py

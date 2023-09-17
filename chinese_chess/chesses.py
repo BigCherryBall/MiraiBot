@@ -1,17 +1,14 @@
 from chinese_chess.chess import Chess
 from chinese_chess.chess_except import CommandExcept, MoveExcept
 from chinese_chess.enum import Team
-from PIL import Image
-
-pic_root = r'/home/Ying/mirai/MiraiBot/chinese_chess/my_chess' + '/'
 
 
 class Horse(Chess):  # 马
     def __init__(self, team: str, x: int, y: int):
-        path = pic_root + 'red_knight.jpg'
-        if team == Team.Black:
-            path = pic_root + 'black_knight.jpg'
-        img = Image.open(path)
+        if team == Team.Red:
+            img = 'red_knight.jpg'
+        else:
+            img = 'black_knight.jpg'
         super(Horse, self).__init__(team, img, x, y, '马')
 
     def move(self, command: str, mp):
@@ -31,8 +28,8 @@ class Horse(Chess):  # 马
         if command[0] == '平':
             raise CommandExcept()
         target_y = self.get_cow_by_num(num)
-        x = self.transform.position.x
-        y = self.transform.position.y
+        x = self.pos.x
+        y = self.pos.y
         _x = 1
         _y = target_y - y
         is_lega = True  # 是否撇脚
@@ -75,10 +72,10 @@ class Horse(Chess):  # 马
 
 class Car(Chess):  # 车
     def __init__(self, team: str, x: int, y: int):
-        path = pic_root + 'red_rook.jpg'
         if team == Team.Black:
-            path = pic_root + 'black_rook.jpg'
-        img = Image.open(path)
+            img = pic_root + 'black_rook.jpg'
+        else:
+            img = pic_root + 'red_rook.jpg'
         super(Car, self).__init__(team, img, x, y, '车')
 
     def move(self, command: str, mp):
@@ -113,8 +110,8 @@ class Car(Chess):  # 车
         return x, y, new_x, new_y, target
 
     def is_legal(self, command: str, mp):
-        x = self.transform.position.x
-        y = self.transform.position.y
+        x = self.pos.x
+        y = self.pos.y
         _x = 0
         _y = 0
         direction = command[0]
@@ -134,12 +131,12 @@ class Car(Chess):  # 车
 
 class Elephant(Chess):  # 相象
     def __init__(self, team: str, x: int, y: int):
-        name = '相'
-        path = pic_root + 'red_elephant.jpg'
-        if team == Team.Black:
+        if team == Team.Red:
+            name = '相'
+            img = 'red_elephant.jpg'
+        else:
             name = '象'
-            path = pic_root + 'black_elephant.jpg'
-        img = Image.open(path)
+            img = 'black_elephant.jpg'
         super(Elephant, self).__init__(team, img, x, y, name)
 
     def move(self, command: str, mp):
@@ -159,8 +156,8 @@ class Elephant(Chess):  # 相象
         num = command[1]
         if command[0] == '平':
             raise CommandExcept()
-        x = self.transform.position.x
-        y = self.transform.position.y
+        x = self.pos.x
+        y = self.pos.y
         _x = 2
         _y = self.get_cow_by_num(num) - y
         if abs(_y) != 2:
@@ -179,12 +176,12 @@ class Elephant(Chess):  # 相象
 
 class Soldier(Chess):  # 兵卒
     def __init__(self, team: str, x: int, y: int):
-        name = '兵'
-        path = pic_root + 'red_pawn.jpg'
-        if team == Team.Black:
+        if team == Team.Red:
+            name = '兵'
+            img = 'red_pawn.jpg'
+        else:
             name = '卒'
-            path = pic_root + 'black_pawn.jpg'
-        img = Image.open(path)
+            img = 'black_pawn.jpg'
         super(Soldier, self).__init__(team, img, x, y, name)
 
     def move(self, command: str, mp):
@@ -198,8 +195,8 @@ class Soldier(Chess):  # 兵卒
     def is_legal(self, command: str, mp):
         direction = command[0]
         cow = command[1]
-        x = self.transform.position.x
-        y = self.transform.position.y
+        x = self.pos.x
+        y = self.pos.y
         _y = 1
         _x = 1
         if direction == '退':  # 小兵不能回退滴
@@ -252,12 +249,12 @@ class Soldier(Chess):  # 兵卒
 
 class Guard(Chess):  # 士
     def __init__(self, team: str, x: int, y: int):
-        name = '仕'
-        path = pic_root + 'red_mandarin.jpg'
-        if team == Team.Black:
+        if team == Team.Red:
+            name = '仕'
+            img = 'red_mandarin.jpg'
+        else:
             name = '士'
-            path = pic_root + 'black_mandarin.jpg'
-        img = Image.open(path)
+            img = 'black_mandarin.jpg'
         super(Guard, self).__init__(team, img, x, y, name)
 
     def move(self, command: str, mp):
@@ -275,8 +272,8 @@ class Guard(Chess):  # 士
         if direction == '平':
             raise CommandExcept()
         target_y = self.get_cow_by_num(command[1])
-        x = self.transform.position.x
-        y = self.transform.position.y
+        x = self.pos.x
+        y = self.pos.y
         if abs(target_y - y) != 1:
             raise CommandExcept()
         if target_y < 3 or target_y > 5:
@@ -297,10 +294,10 @@ class Guard(Chess):  # 士
 
 class Artillery(Chess):  # 炮，这个好难。。
     def __init__(self, team: str, x: int, y: int):
-        path = pic_root + 'red_cannon.jpg'
-        if team == Team.Black:
-            path = pic_root + 'black_cannon.jpg'
-        img = Image.open(path)
+        if team == Team.Red:
+            img = 'red_cannon.jpg'
+        else:
+            img = 'black_cannon.jpg'
         super(Artillery, self).__init__(team, img, x, y, '炮')
 
     def move(self, command: str, mp):
@@ -312,8 +309,8 @@ class Artillery(Chess):  # 炮，这个好难。。
         return x, y, new_x, new_y, target
 
     def is_legal(self, command: str, mp):
-        x = self.transform.position.x
-        y = self.transform.position.y
+        x = self.pos.x
+        y = self.pos.y
         _x = 0
         _y = 0
         distance = 0
@@ -383,12 +380,12 @@ class Artillery(Chess):  # 炮，这个好难。。
 
 class Commander(Chess):  # 将帅
     def __init__(self, team: str, x: int, y: int):
-        name = '帅'
-        path = pic_root + 'red_king.jpg'
-        if team == Team.Black:
+        if team == Team.Red:
+            name = '帅'
+            img = 'red_king.jpg'
+        else:
             name = '将'
-            path = pic_root + 'black_king.jpg'
-        img = Image.open(path)
+            img = 'black_king.jpg'
         super(Commander, self).__init__(team, img, x, y, name)
 
     def move(self, command: str, mp):
@@ -407,8 +404,8 @@ class Commander(Chess):  # 将帅
         direction = command[0]
         cow = 0
         distance = 1
-        x = self.transform.position.x
-        y = self.transform.position.y
+        x = self.pos.x
+        y = self.pos.y
         _y = 0
         _x = 0
         if direction == '平':
@@ -438,8 +435,8 @@ class Commander(Chess):  # 将帅
         direction = command[0]
         distance = self.get_dis_by_num(command[1])
         if direction == '进' and (4 < distance < 10):
-            y = self.transform.position.y
-            x = self.transform.position.x
+            y = self.pos.y
+            x = self.pos.x
             _x = distance
             count = 0
             if self.team == Team.Red:

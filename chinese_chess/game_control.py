@@ -2,10 +2,12 @@ import math
 import random
 import re
 import time
-from tool import get_time_str
+from tool import get_time_str, work_dir
 from chinese_chess.chess_except import ChessNotFindExcept, BackExcept
 from chinese_chess.chesses import *
-from chinese_chess.enum import Team, Turn
+from chinese_chess.enum import *
+from pathlib import Path
+from PIL import Image
 
 
 class GameControl:
@@ -89,11 +91,19 @@ class GameControl:
         self.last_step_time = 0
         # 当前步用时
         self.current_step_time = 0
+        # 棋盘风格
+        self.map_style = MapStyle.default
+        # 棋子风格
+        self.chess_style = ChessStyle.default
+        # 棋盘路径
+        self.map_dir = Path(work_dir, 'chinese_chess', 'image', 'map')
+        # 棋子路径
+        self.chess_dir = Path(work_dir, 'chinese_chess', 'image', 'chess')
 
     # 将空棋盘变为初始化棋盘
     def init_map(self):
-        for i in range(0, 10):
-            for j in range(0, 9):
+        for i in [0, 1, 2, 3, 4, 5, 6, 7, 8, 9]:
+            for j in [0, 1, 2, 3, 4, 5, 6, 7, 8]:
                 self.map[i][j] = None
         # 该谁走棋了
         self.turn = Turn.Red
@@ -120,6 +130,10 @@ class GameControl:
         self.last_step_time = self.start_time
         # 当前步用时
         self.current_step_time = 0
+        # 棋盘风格
+        self.map_style = MapStyle.default
+        # 棋子风格
+        self.chess_style = ChessStyle.default
         # -------------从棋子对象池里面读取数据------------------
         for chess in self.__chess_list:
             chess.back_to_init_pos()
@@ -158,8 +172,25 @@ class GameControl:
             self.turn = Turn.Red
 
     def get_chess(self, command: str, right1, right2) -> Chess:
+        def chess_name_transform(name) -> str:
+            chess_name_right = name
+            # 棋子红黑转化
+            if name == '相' and self.turn == Turn.Black:
+                chess_name_right = '象'
+            elif name == '象' and self.turn == Turn.Red:
+                chess_name_right = '相'
+            if name == '兵' and self.turn == Turn.Black:
+                chess_name_right = '卒'
+            elif name == '卒' and self.turn == Turn.Red:
+                chess_name_right = '兵'
+            if name == '仕' and self.turn == Turn.Black:
+                chess_name_right = '士'
+            elif name == '士' and self.turn == Turn.Red:
+                chess_name_right = '仕'
+            return chess_name_right
+
         if right1:
-            chess_name = command[0]
+            chess_name = chess_name_transform(command[0])
             cow = self.get_cow_by_num(command[1])
             chess: Chess = None
             for i in range(0, 10):
@@ -175,7 +206,7 @@ class GameControl:
             chess1 = None
             chess2 = None
             forward_or_behind = command[0]
-            chess_name = command[1]
+            chess_name = chess_name_transform(command[1])
             chess1_r = 0
             cow = 0
             for i in range(0, 10):
@@ -254,7 +285,7 @@ class GameControl:
                 return 8
 
     def paint_map(self):
-        m = Image.open(pic_root + 'map.jpg')
+        pic = Image.open(pic_root + 'map.jpg')
         # 先画位置提示:
         if self.turn == Turn.Red:
             begin = Image.open(pic_root + 'black_begin.jpg')
@@ -262,15 +293,16 @@ class GameControl:
         else:
             begin = Image.open(pic_root + 'red_begin.jpg')
             end = Image.open(pic_root + 'red_end.jpg')
-        m.paste(begin, (8 + self.__y * 80, 18 + self.__x * 80))
-        m.paste(end, (4 + self.__new_y * 80, 14 + self.__new_x * 80))
+        pic.paste(begin, (8 + self.__y * 80, 18 + self.__x * 80))
+        pic.paste(end, (4 + self.__new_y * 80, 14 + self.__new_x * 80))
         # 再画棋子
         for row in self.map:
             for chess in row:
                 if chess:  # 如果不为None
-                    m.paste(chess.image, (8 + chess.pos.y * 80, 18 + chess.pos.x * 80))
+                    img = Image.open(Path(self.chess_dir, self.chess_style, chess.image))
+                    pic.paste(img, (8 + chess.pos.y * 80, 18 + chess.pos.x * 80))
         path = pic_root + self.seed + '.jpg'
-        m.save(path)
+        pic.save(path)
         return path
 
     def set_over(self, winner: str):
