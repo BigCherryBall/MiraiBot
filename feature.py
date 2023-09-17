@@ -8,7 +8,7 @@ from chinese_chess.game_control import GameControl
 from event import Type, event
 from one_day_poetry import *
 from collections import defaultdict
-from pathlib import *
+from pathlib import Path
 from tool import get_time_str as t2s
 import random
 import tool

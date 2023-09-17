@@ -2,17 +2,16 @@ from abc import abstractmethod
 
 from PIL import Image
 from chinese_chess.enum import Team
-from chinese_chess.component import Transform, Vector2
+from chinese_chess.component import Vector2
 
 
 class Chess:
-
     def __init__(self, team: str, img: Image, x: int, y: int, name: str):
-        self.image = img  # 棋子的图片,子类传过来~
+        self.image: Image = img  # 棋子的图片,子类传过来~
         self.name: str = name  # 棋子名字，子类传过来~
         self.team: str = team  # 阵营，子类传过来~
-        self.transform: Transform = Transform(self, x, y)  # 变换组件,初始坐标进行设置
-        self.init_pos = Vector2(x, y)  # 初始位置,保持不变
+        self.pos: Vector2 = Vector2(x, y)  # 变换组件,初始坐标进行设置
+        self.init_pos: Vector2 = Vector2(x, y)  # 初始位置,保持不变
         self.one_hot = ''  # 为后续人机对战，需要将棋子进行one-hot编码挖坑
 
     @abstractmethod
@@ -27,14 +26,12 @@ class Chess:
         pass
 
     def update_position(self, new_x: int, new_y: int):  # 每次移动后要记得更新棋子位置
-        pos = self.transform.position
-        pos.x = new_x
-        pos.y = new_y
+        self.pos.x = new_x
+        self.pos.y = new_y
 
     def back_to_init_pos(self):
-        pos = self.transform.position
-        pos.x = self.init_pos.x
-        pos.y = self.init_pos.y
+        self.pos.x = self.init_pos.x
+        self.pos.y = self.init_pos.y
 
     def __repr__(self):  # 方便print
         return self.team + self.name

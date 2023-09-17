@@ -1,4 +1,5 @@
 import datetime
+from pathlib import Path
 import yaml
 
 
@@ -63,3 +64,6 @@ def get_time_str(second: int | float) -> str:
         return str(minute) + '分' + str(second) + '秒'
     else:
         return str(second) + '秒'
+
+
+work_dir = Path.cwd()

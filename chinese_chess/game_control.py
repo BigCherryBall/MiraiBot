@@ -12,17 +12,17 @@ class GameControl:
     def __init__(self, seed: int = random.randint(0, 10000)):
         # 空棋盘
         # 实时棋盘，是一个二维的列表，列表里面是棋子对象的引用，没有棋子的地方是None。通过str(棋子对象的引用)获取其中的名字，格式为红/黑+棋子名字（注意红黑方的部分棋子名称不同）
-        # 绘制棋盘也是读取这个二维列表的数据，通过棋子对象的引用.transform.position访问棋子坐标，如 引用.transform.position.x可以访问x坐标（坐标从0开始）
-        self.map = [[None, None, None, None, None, None, None, None, None],
-                    [None, None, None, None, None, None, None, None, None],
-                    [None, None, None, None, None, None, None, None, None],
-                    [None, None, None, None, None, None, None, None, None],
-                    [None, None, None, None, None, None, None, None, None],
-                    [None, None, None, None, None, None, None, None, None],
-                    [None, None, None, None, None, None, None, None, None],
-                    [None, None, None, None, None, None, None, None, None],
-                    [None, None, None, None, None, None, None, None, None],
-                    [None, None, None, None, None, None, None, None, None]]
+        # 绘制棋盘也是读取这个二维列表的数据，通过棋子对象的引用.pos访问棋子坐标，如 引用.pos.x可以访问x坐标（坐标从0开始）
+        self.map: list[list[Chess | None]] = [[None, None, None, None, None, None, None, None, None],
+                                              [None, None, None, None, None, None, None, None, None],
+                                              [None, None, None, None, None, None, None, None, None],
+                                              [None, None, None, None, None, None, None, None, None],
+                                              [None, None, None, None, None, None, None, None, None],
+                                              [None, None, None, None, None, None, None, None, None],
+                                              [None, None, None, None, None, None, None, None, None],
+                                              [None, None, None, None, None, None, None, None, None],
+                                              [None, None, None, None, None, None, None, None, None],
+                                              [None, None, None, None, None, None, None, None, None]]
 
         # 棋子对象池,所有棋盘共享,类的内部可访问，外部无法访问。只读不改。
         self.__chess_list = [
@@ -265,11 +265,10 @@ class GameControl:
         m.paste(begin, (8 + self.__y * 80, 18 + self.__x * 80))
         m.paste(end, (4 + self.__new_y * 80, 14 + self.__new_x * 80))
         # 再画棋子
-        for i in range(0, 10):
-            for j in range(0, 9):
-                chess = self.map[i][j]
+        for row in self.map:
+            for chess in row:
                 if chess:  # 如果不为None
-                    m.paste(chess.image, (8 + j * 80, 18 + i * 80))
+                    m.paste(chess.image, (8 + chess.pos.y * 80, 18 + chess.pos.x * 80))
         path = pic_root + self.seed + '.jpg'
         m.save(path)
         return path
