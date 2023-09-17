@@ -111,8 +111,6 @@ class bot:
             # 先判定是不是支持类型的事件
             if not ev.type:
                 return
-            if ev.sender_id == 3212217291:
-                return True
             # 撤回消息
             elif ev.type == Type.recall:
                 if f.power['防撤回']:
@@ -120,10 +118,8 @@ class bot:
                     f.void_recall(self, ev, data)
                 return
             # 调用功能列表
-            idx = 0
             for fun in f.function_list:
                 if fun(self, ev):
-
                     return
 
         except Exception as e:

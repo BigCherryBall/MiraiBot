@@ -293,7 +293,6 @@ class GameControl:
                 return 8
 
     def paint_map(self):
-        print('打印棋盘')
         # 棋盘
         if self.turn == Turn.Red:
             pic = Image.open(Path(self.map_dir, self.red_map_style, 'map_red.jpg')).convert('RGB')
@@ -309,22 +308,22 @@ class GameControl:
             begin = Image.open(Path(self.reminder_dir, 'default', 'red_begin.jpg'))
             end = Image.open(Path(self.reminder_dir, 'default', 'red_end.jpg'))
             pic.paste(begin, (8 + (8 - self.__y) * 80, 18 + (9 - self.__x) * 80))
-            pic.paste(end, (4 + (9 - self.__new_y) * 80, 14 + (9 - self.__new_x) * 80))
+            pic.paste(end, (4 + (8 - self.__new_y) * 80, 14 + (9 - self.__new_x) * 80))
         # 再画棋子
         for row in self.map:
             for chess in row:
                 if chess:  # 如果不为None
                     img = Image.open(Path(self.chess_dir, self.red_chess_style, chess.image))
                     if self.turn == Turn.Black:
-                        y = 9 - chess.pos.y
-                        x = 8 - chess.pos.x
+                        y = 8 - chess.pos.y
+                        x = 9 - chess.pos.x
                         pic.paste(img, (8 + y * 80, 18 + x * 80), img)
                     else:
                         pic.paste(img, (8 + chess.pos.y * 80, 18 + chess.pos.x * 80), img)
         pic.save(self.path)
-        print('打印完成')
 
     def set_over(self, winner: str):
+        self.round_count = math.ceil(self.step / 2)
         if winner:
             if winner == Team.Black:
                 self.game_over = Team.Black

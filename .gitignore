@@ -1,6 +1,7 @@
 test1.py
 test2.py
-temp
+./temp
+./image/temp
 .idea
 config.yml
 fun.py

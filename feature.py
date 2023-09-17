@@ -405,7 +405,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
     def get_players_time() -> str:
         result = ''
         for player in players:
-            result += '    ' + player.name + ':' + t2s(player.used_time) + '\n'
+            result += '->' + player.name + ':' + t2s(player.used_time) + '\n'
         return result
 
     if msg[0:4] == '加入棋局':
@@ -438,8 +438,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
                     b.send_text(ev, '命令错误，使用\'加入棋局\'或者\'加入棋局 红/黑\'即可加入棋局')
                     return True
 
-                players[num] = ChessPlayer(sender, ev.sender_name, Team.Red, 1)
-                print(players[num])
+                players[num] = ChessPlayer(sender, ev.sender_name, Team.Black if num else Team.Red, 1)
                 b.send_text(ev, '{} 加入成功，你执{}'.format(ev.sender_name, players[num].team))
                 return True
             elif (not players[0]) or (not players[1]):
@@ -515,7 +514,6 @@ def chinese_chess(b: bot, ev: event) -> bool:
         control.paint_map()
         url = "file:///" + str(control.path)
         b.send_image(ev, url)
-        os.remove(p)
         return True
     elif msg == '退出棋局' or msg == '掀棋盘':
         control = get_control()
@@ -563,6 +561,9 @@ def chinese_chess(b: bot, ev: event) -> bool:
                 loser = loser + i.name + ' '
             else:
                 winner = winner + i.name + ' '
+
+        players[control.step % lens].used_time += time.time() - control.last_step_time
+        control.round_count = int(control.step / 2) + 1
         if lens == 2:
             b.send_text(ev, '{}方( {})认输，恭喜 {}获得胜利！\n对局回合数：{}\n对局用时：{}\n用时详情：\n{}'.format(
                 lose_team, loser, winner, control.round_count, control.getTotalTime(), get_players_time()))
@@ -578,37 +579,36 @@ def chinese_chess(b: bot, ev: event) -> bool:
         control = get_control()
         if control.status != 'has_began':
             return True
-
         players: list[ChessPlayer | None] = chess_dic[location]['player']
         lens = len(players)
 
         def to_mov(current_player: ChessPlayer):
             try:
-                control.move_chess(ev.message)
+                control.move_chess(msg)
             except Exception as ex:
                 if isinstance(ex, ChessExcept):
                     b.send_text(ev, str(ex))
                 else:
                     print('[feature chinese_chess] to_mov function error: ' + str(ex))
-                current_player.used_time += control.current_step_time
-                control.paint_map()
-                url_ = "file:///" + str(control.path)
-                b.send_image(ev, url_)
-                if control.path.exists():
-                    control.path.unlink()
-                over = control.game_over
-                if over:
-                    win = ''
-                    lose = ''
-                    for player in players:
-                        if player.team == over:
-                            win = win + player.name + ' '
-                        else:
-                            lose = lose + player.name + ' '
-                    time.sleep(0.5)
-                    b.send_text(ev, '经过{}个回合，恭喜 {}战胜了 {}！\n对局用时：{}\n用时详情：\n{}'.format(
-                        control.round_count, win, lose, control.getTotalTime(), get_players_time()))
-                    game_over(control)
+            current_player.used_time += control.current_step_time
+            control.paint_map()
+            url_ = "file:///" + str(control.path)
+            b.send_image(ev, url_)
+            if control.path.exists():
+                control.path.unlink()
+            over = control.game_over
+            if over:
+                win = ''
+                lose = ''
+                for player in players:
+                    if player.team == over:
+                        win = win + player.name + ' '
+                    else:
+                        lose = lose + player.name + ' '
+                time.sleep(0.5)
+                b.send_text(ev, '经过{}个回合，恭喜 {}战胜了 {}！\n对局用时：{}\n用时详情：\n{}'.format(
+                    control.round_count, win, lose, control.getTotalTime(), get_players_time()))
+                game_over(control)
 
         current: ChessPlayer = players[control.step % lens]
         if sender == current.qq:
