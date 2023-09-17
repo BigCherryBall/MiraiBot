@@ -82,6 +82,8 @@ class GameControl:
         self.round_count = 0
         # 随机数种子,用于区分不同的群
         self.seed = str(seed)
+        # 图片保存地址
+        self.path = Path(work_dir, 'chinese_chess', 'image', 'temp', self.seed + '.jpg')
         # 开始和结束时间
         self.start_time = 0
         self.end_time = 0
@@ -92,13 +94,17 @@ class GameControl:
         # 当前步用时
         self.current_step_time = 0
         # 棋盘风格
-        self.map_style = MapStyle.default
+        self.red_map_style = MapStyle.default
+        self.black_map_style = MapStyle.default
         # 棋子风格
-        self.chess_style = ChessStyle.default
+        self.red_chess_style = ChessStyle.default
+        self.black_chess_style = ChessStyle.default
         # 棋盘路径
         self.map_dir = Path(work_dir, 'chinese_chess', 'image', 'map')
         # 棋子路径
         self.chess_dir = Path(work_dir, 'chinese_chess', 'image', 'chess')
+        # 提示路径
+        self.reminder_dir = Path(work_dir, 'chinese_chess', 'image', 'move_remind')
 
     # 将空棋盘变为初始化棋盘
     def init_map(self):
@@ -131,9 +137,11 @@ class GameControl:
         # 当前步用时
         self.current_step_time = 0
         # 棋盘风格
-        self.map_style = MapStyle.default
+        self.red_map_style = MapStyle.default
+        self.black_map_style = MapStyle.default
         # 棋子风格
-        self.chess_style = ChessStyle.default
+        self.red_chess_style = ChessStyle.default
+        self.black_chess_style = ChessStyle.default
         # -------------从棋子对象池里面读取数据------------------
         for chess in self.__chess_list:
             chess.back_to_init_pos()
@@ -285,25 +293,31 @@ class GameControl:
                 return 8
 
     def paint_map(self):
-        pic = Image.open(pic_root + 'map.jpg')
+        if self.turn == Turn.Red:
+            pic = Image.open(Path(self.map_dir, self.red_map_style, 'map_red.jpg'))
+        else:
+            pic = Image.open(Path(self.map_dir, self.black_map_style, 'map_black.jpg'))
         # 先画位置提示:
         if self.turn == Turn.Red:
-            begin = Image.open(pic_root + 'black_begin.jpg')
-            end = Image.open(pic_root + 'black_end.jpg')
+            begin = Image.open(Path(self.reminder_dir, 'default', 'black_begin.jpg'))
+            end = Image.open(Path(self.reminder_dir, 'default', 'black_end.jpg'))
         else:
-            begin = Image.open(pic_root + 'red_begin.jpg')
-            end = Image.open(pic_root + 'red_end.jpg')
+            begin = Image.open(Path(self.reminder_dir, 'default', 'red_begin.jpg'))
+            end = Image.open(Path(self.reminder_dir, 'default', 'red_end.jpg'))
         pic.paste(begin, (8 + self.__y * 80, 18 + self.__x * 80))
         pic.paste(end, (4 + self.__new_y * 80, 14 + self.__new_x * 80))
         # 再画棋子
         for row in self.map:
             for chess in row:
                 if chess:  # 如果不为None
-                    img = Image.open(Path(self.chess_dir, self.chess_style, chess.image))
-                    pic.paste(img, (8 + chess.pos.y * 80, 18 + chess.pos.x * 80))
-        path = pic_root + self.seed + '.jpg'
-        pic.save(path)
-        return path
+                    img = Image.open(Path(self.chess_dir, self.red_chess_style, chess.image))
+                    if self.turn == Turn.Black:
+                        y = 9 - chess.pos.y
+                        x = 8 - chess.pos.x
+                        pic.paste(img, (8 + y * 80, 18 + x * 80))
+                    else:
+                        pic.paste(img, (8 + chess.pos.y * 80, 18 + chess.pos.x * 80))
+        pic.save(self.path)
 
     def set_over(self, winner: str):
         if winner:

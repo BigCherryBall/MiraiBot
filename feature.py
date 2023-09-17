@@ -577,11 +577,17 @@ def chinese_chess(b: bot, ev: event) -> bool:
         def to_mov(current_player: ChessPlayer):
             try:
                 control.move_chess(ev.message)
+            except Exception as ex:
+                if isinstance(ex, ChessExcept):
+                    b.send_text(ev, str(ex))
+                else:
+                    print('[feature chinese_chess] to_mov function error: ' + str(ex))
                 current_player.used_time += control.current_step_time
-                img = control.paint_map()
-                url_ = "file:///" + os.path.join(img)
+                control.paint_map()
+                url_ = "file:///" + str(control.path)
                 b.send_image(ev, url_)
-                os.remove(img)
+                if control.path.exists():
+                    control.path.unlink()
                 over = control.game_over
                 if over:
                     win = ''
@@ -595,11 +601,6 @@ def chinese_chess(b: bot, ev: event) -> bool:
                     b.send_text(ev, '经过{}个回合，恭喜 {}战胜了 {}！\n对局用时：{}\n用时详情：\n{}'.format(
                         control.round_count, win, lose, control.getTotalTime(), get_players_time()))
                     game_over(control)
-            except Exception as ex:
-                if isinstance(ex, ChessExcept):
-                    b.send_text(ev, str(ex))
-                else:
-                    print('[feature chinese_chess] to_mov function error: ' + str(ex))
 
         current: ChessPlayer = players[control.step % lens]
         if sender == current.qq:
