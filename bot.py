@@ -11,9 +11,9 @@ __version__ = 4.1
 
 
 class bot:
-    def __init__(self, address, port=5070, authKey="INITKEY61xgs0xw"):
+    def __init__(self, address, port=5700, authKey = "BigCherryBall"):
         self.author = 2655602003
-        self.bot_qq = 2750345154
+        self.bot_qq = 1969712698
         self.conn = http.client.HTTPConnection(address, port)
         self.authKey = authKey
         self.sessionKey = self.bind()
@@ -120,12 +120,14 @@ class bot:
                     f.void_recall(self, ev, data)
                 return
             # 调用功能列表
+            idx = 0
             for fun in f.function_list:
                 if fun(self, ev):
+
                     return
 
         except Exception as e:
-            print('[feature _step_deal_data] error:', e)
+            print('[bot _step_deal_data] error:', e)
 
     def deal_data(self, data):
         # 这里是处理消息的代码，解析消息并进行回复
@@ -208,6 +210,6 @@ class json_deal:
 
 if __name__ == '__main__':
     print('begin')
-    b = bot("127.0.0.1", 5070)
+    b = bot("127.0.0.1")
     r = asyncio.run(b.run())
     sys.exit(r)

@@ -402,9 +402,6 @@ def chinese_chess(b: bot, ev: event) -> bool:
                 players[0], players[1], players[2], players[3]))
         return True
 
-    players: list[ChessPlayer | None] = chess_dic[location]['player']
-    lens = len(players)
-
     def get_players_time() -> str:
         result = ''
         for player in players:
@@ -419,6 +416,8 @@ def chinese_chess(b: bot, ev: event) -> bool:
             b.send_text(ev, '棋局还没有初始化，发送\'中国象棋\'或\'联棋\'初始化')
             return True
 
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
+        lens = len(players)
         if status == 'has_began':
             if lens == 2:
                 b.send_text(ev, '棋局已经开始，快来观战吧\n红方:{}\n黑方:{}'.format(players[0].name, players[1].name))
@@ -440,6 +439,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
                     return True
 
                 players[num] = ChessPlayer(sender, ev.sender_name, Team.Red, 1)
+                print(players[num])
                 b.send_text(ev, '{} 加入成功，你执{}'.format(ev.sender_name, players[num].team))
                 return True
             elif (not players[0]) or (not players[1]):
@@ -459,7 +459,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
                 b.send_text(ev, '{} 你已经加入了，请耐心等待其他棋手'.format(ev.sender_name))
                 return True
             para = msg[5:7]
-            if para == '' and msg == '加入棋局':
+            if msg == '加入棋局':
                 empty = []
                 idx = 0
                 while idx < lens:
@@ -467,7 +467,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
                         empty.append(idx)
                     idx += 1
                 if len(empty) == 0:
-                    b.send_text(ev,'出现错误，麻烦踢一脚作者，错误地点：[feature chinese_chess msg=加入棋局 len(empty)=0]')
+                    b.send_text(ev, '出现错误，麻烦踢一脚作者，错误地点：[feature chinese_chess msg=加入棋局 len(empty)=0]')
                     return True
                 pos_num = empty[random.randint(0, len(empty) - 1)]
                 if pos_num < 2:
@@ -512,8 +512,8 @@ def chinese_chess(b: bot, ev: event) -> bool:
             if not p:
                 return True
         control.init_map()
-        p = control.paint_map()
-        url = "file:///" + os.path.join(p)
+        control.paint_map()
+        url = "file:///" + str(control.path)
         b.send_image(ev, url)
         os.remove(p)
         return True
@@ -522,6 +522,8 @@ def chinese_chess(b: bot, ev: event) -> bool:
         if control.status == 'not_begin':
             return True
 
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
+        lens = len(players)
         if lens == 2 or lens == 4:
             is_player, idx = is_sender_in_player()
             if not is_player:
@@ -546,6 +548,9 @@ def chinese_chess(b: bot, ev: event) -> bool:
         control = get_control()
         if control.status != 'has_began':
             return True
+
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
+        lens = len(players)
         is_chesser, index = is_sender_in_player()
         if not is_chesser:
             return True
@@ -573,6 +578,9 @@ def chinese_chess(b: bot, ev: event) -> bool:
         control = get_control()
         if control.status != 'has_began':
             return True
+
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
+        lens = len(players)
 
         def to_mov(current_player: ChessPlayer):
             try:
@@ -610,6 +618,8 @@ def chinese_chess(b: bot, ev: event) -> bool:
         control = get_control()
         if control.status != 'has_began':
             return True
+
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
         if control.step <= 0:
             b.send_text(ev, ev.sender_name + '，你是不是不知道这才刚开局啊？')
             return True
@@ -634,6 +644,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
             b.send_text(ev, '请指明你需要谁接手，使用 请求接手@他 可以发起请求，对方发送 接手 即可完成交接')
             return True
         is_player, index = is_sender_in_player()
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
         if not is_player:
             return True
         if is_sender_in_player(ev.at)[0]:
@@ -651,6 +662,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
         if control.status != 'has_began':
             return True
 
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
         for p in players:
             if sender == p.helper_qq:
                 p.change_player(ev.sender_name)
@@ -662,6 +674,8 @@ def chinese_chess(b: bot, ev: event) -> bool:
         control = get_control()
         if control.status != 'has_began':
             return True
+
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
         is_player, index = is_sender_in_player()
         if not is_player:
             return True
@@ -672,6 +686,8 @@ def chinese_chess(b: bot, ev: event) -> bool:
         control = get_control()
         if control.status != 'has_began':
             return True
+
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
         is_player, index = is_sender_in_player()
         if not is_player:
             return True
@@ -682,7 +698,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
             if players[idx].propose_peace:
                 game_over(control)
                 b.send_text(ev, '以和为贵！\n对局回合数：{}\n对局用时：{}\n用时详情：\n{}'.format(control.round_count,
-                            control.getTotalTime(), get_players_time()))
+                            control.getTotalTime(),get_players_time()))
                 return True
             idx += 2
         return True
@@ -815,7 +831,8 @@ def headPicture2Image(b: bot, ev: event) -> bool:
     if not power['表情包']:
         return False
     if ev.message == '表情列表':
-        b.send_text(ev, '目前可制作表情的命令有：' + (str(image_list)).replace('\'', '') + '\n\n注：除了艾特，使用：命令#qq号 也可以')
+        b.send_text(ev, '目前可制作表情的命令有：' + (str(image_list)).replace('\'',
+                                                                              '') + '\n\n注：除了艾特，使用：命令#qq号 也可以')
         return True
     msg = ev.message
     is_match = True

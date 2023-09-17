@@ -293,6 +293,7 @@ class GameControl:
                 return 8
 
     def paint_map(self):
+        print('打印棋盘')
         # 棋盘
         if self.turn == Turn.Red:
             pic = Image.open(Path(self.map_dir, self.red_map_style, 'map_red.jpg')).convert('RGB')
@@ -317,10 +318,11 @@ class GameControl:
                     if self.turn == Turn.Black:
                         y = 9 - chess.pos.y
                         x = 8 - chess.pos.x
-                        pic.paste(img, (8 + y * 80, 18 + x * 80))
+                        pic.paste(img, (8 + y * 80, 18 + x * 80), img)
                     else:
-                        pic.paste(img, (8 + chess.pos.y * 80, 18 + chess.pos.x * 80))
+                        pic.paste(img, (8 + chess.pos.y * 80, 18 + chess.pos.x * 80), img)
         pic.save(self.path)
+        print('打印完成')
 
     def set_over(self, winner: str):
         if winner:
