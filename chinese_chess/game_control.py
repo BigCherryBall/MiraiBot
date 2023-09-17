@@ -293,19 +293,22 @@ class GameControl:
                 return 8
 
     def paint_map(self):
+        # 棋盘
         if self.turn == Turn.Red:
-            pic = Image.open(Path(self.map_dir, self.red_map_style, 'map_red.jpg'))
+            pic = Image.open(Path(self.map_dir, self.red_map_style, 'map_red.jpg')).convert('RGB')
         else:
-            pic = Image.open(Path(self.map_dir, self.black_map_style, 'map_black.jpg'))
+            pic = Image.open(Path(self.map_dir, self.black_map_style, 'map_black.jpg')).convert('RGB')
         # 先画位置提示:
         if self.turn == Turn.Red:
             begin = Image.open(Path(self.reminder_dir, 'default', 'black_begin.jpg'))
             end = Image.open(Path(self.reminder_dir, 'default', 'black_end.jpg'))
+            pic.paste(begin, (8 + self.__y * 80, 18 + self.__x * 80))
+            pic.paste(end, (4 + self.__new_y * 80, 14 + self.__new_x * 80))
         else:
             begin = Image.open(Path(self.reminder_dir, 'default', 'red_begin.jpg'))
             end = Image.open(Path(self.reminder_dir, 'default', 'red_end.jpg'))
-        pic.paste(begin, (8 + self.__y * 80, 18 + self.__x * 80))
-        pic.paste(end, (4 + self.__new_y * 80, 14 + self.__new_x * 80))
+            pic.paste(begin, (8 + (8 - self.__y) * 80, 18 + (9 - self.__x) * 80))
+            pic.paste(end, (4 + (9 - self.__new_y) * 80, 14 + (9 - self.__new_x) * 80))
         # 再画棋子
         for row in self.map:
             for chess in row:

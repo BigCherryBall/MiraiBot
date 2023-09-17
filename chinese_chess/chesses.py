@@ -6,9 +6,9 @@ from chinese_chess.enum import Team
 class Horse(Chess):  # 马
     def __init__(self, team: str, x: int, y: int):
         if team == Team.Red:
-            img = 'red_knight.jpg'
+            img = 'red_knight.png'
         else:
-            img = 'black_knight.jpg'
+            img = 'black_knight.png'
         super(Horse, self).__init__(team, img, x, y, '马')
 
     def move(self, command: str, mp):
@@ -73,9 +73,9 @@ class Horse(Chess):  # 马
 class Car(Chess):  # 车
     def __init__(self, team: str, x: int, y: int):
         if team == Team.Black:
-            img = pic_root + 'black_rook.jpg'
+            img = 'black_rook.png'
         else:
-            img = pic_root + 'red_rook.jpg'
+            img = 'red_rook.png'
         super(Car, self).__init__(team, img, x, y, '车')
 
     def move(self, command: str, mp):
@@ -133,10 +133,10 @@ class Elephant(Chess):  # 相象
     def __init__(self, team: str, x: int, y: int):
         if team == Team.Red:
             name = '相'
-            img = 'red_elephant.jpg'
+            img = 'red_elephant.png'
         else:
             name = '象'
-            img = 'black_elephant.jpg'
+            img = 'black_elephant.png'
         super(Elephant, self).__init__(team, img, x, y, name)
 
     def move(self, command: str, mp):
@@ -178,10 +178,10 @@ class Soldier(Chess):  # 兵卒
     def __init__(self, team: str, x: int, y: int):
         if team == Team.Red:
             name = '兵'
-            img = 'red_pawn.jpg'
+            img = 'red_pawn.png'
         else:
             name = '卒'
-            img = 'black_pawn.jpg'
+            img = 'black_pawn.png'
         super(Soldier, self).__init__(team, img, x, y, name)
 
     def move(self, command: str, mp):
@@ -251,10 +251,10 @@ class Guard(Chess):  # 士
     def __init__(self, team: str, x: int, y: int):
         if team == Team.Red:
             name = '仕'
-            img = 'red_mandarin.jpg'
+            img = 'red_mandarin.png'
         else:
             name = '士'
-            img = 'black_mandarin.jpg'
+            img = 'black_mandarin.png'
         super(Guard, self).__init__(team, img, x, y, name)
 
     def move(self, command: str, mp):
@@ -295,9 +295,9 @@ class Guard(Chess):  # 士
 class Artillery(Chess):  # 炮，这个好难。。
     def __init__(self, team: str, x: int, y: int):
         if team == Team.Red:
-            img = 'red_cannon.jpg'
+            img = 'red_cannon.png'
         else:
-            img = 'black_cannon.jpg'
+            img = 'black_cannon.png'
         super(Artillery, self).__init__(team, img, x, y, '炮')
 
     def move(self, command: str, mp):
@@ -382,10 +382,10 @@ class Commander(Chess):  # 将帅
     def __init__(self, team: str, x: int, y: int):
         if team == Team.Red:
             name = '帅'
-            img = 'red_king.jpg'
+            img = 'red_king.png'
         else:
             name = '将'
-            img = 'black_king.jpg'
+            img = 'black_king.png'
         super(Commander, self).__init__(team, img, x, y, name)
 
     def move(self, command: str, mp):
