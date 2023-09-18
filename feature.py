@@ -12,6 +12,7 @@ from pathlib import Path
 from tool import get_time_str as t2s
 import random
 import tool
+import math
 
 # 加载本地图库,在当前文件夹下必须有一个image文件夹
 img_root = Path(Path.cwd(), 'image')
@@ -311,7 +312,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
         contro.status = 'not_begin'
         chess_dic[location]['player'] = None
 
-    def is_sender_in_player(qq=sender):
+    def is_sender_in_player(qq: int = sender):
         idx_ = 0
         persons = chess_dic[location]['player']
         while idx_ < len(persons):
@@ -319,6 +320,12 @@ def chinese_chess(b: bot, ev: event) -> bool:
                 return True, idx_
             idx_ += 1
         return False, idx_
+
+    def get_players_time() -> str:
+        result = ''
+        for player in players:
+            result += '\n->' + player.name + ':' + t2s(player.used_time)
+        return result
 
     if ev.message == '中国象棋' or ev.message == '象棋':
         control = get_control()
@@ -402,13 +409,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
                 players[0], players[1], players[2], players[3]))
         return True
 
-    def get_players_time() -> str:
-        result = ''
-        for player in players:
-            result += '->' + player.name + ':' + t2s(player.used_time) + '\n'
-        return result
-
-    if msg[0:4] == '加入棋局':
+    elif msg[0:4] == '加入棋局':
         control = get_control()
         status = control.status
 
@@ -457,7 +458,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
             if is_sender_in_player()[0]:
                 b.send_text(ev, '{} 你已经加入了，请耐心等待其他棋手'.format(ev.sender_name))
                 return True
-            para = msg[5:7]
+            para = msg[5:]
             if msg == '加入棋局':
                 empty = []
                 idx = 0
@@ -466,7 +467,8 @@ def chinese_chess(b: bot, ev: event) -> bool:
                         empty.append(idx)
                     idx += 1
                 if len(empty) == 0:
-                    b.send_text(ev, '出现错误，麻烦踢一脚作者，错误地点：[feature chinese_chess msg=加入棋局 len(empty)=0]')
+                    b.send_text(ev,
+                                '出现错误，麻烦踢一脚作者，错误地点：[feature chinese_chess msg=加入棋局 len(empty)=0]')
                     return True
                 pos_num = empty[random.randint(0, len(empty) - 1)]
                 if pos_num < 2:
@@ -515,6 +517,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
         url = "file:///" + str(control.path)
         b.send_image(ev, url)
         return True
+
     elif msg == '退出棋局' or msg == '掀棋盘':
         control = get_control()
         if control.status == 'not_begin':
@@ -535,7 +538,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
                     b.send_text(ev, '{} 退出成功'.format(ev.sender_name))
             elif msg == '掀棋盘':
                 if control.status == 'has_began':
-                    b.send_text(ev, '棋盘被翻，棋局解散\n用时详情：\n{}'.format(get_players_time()))
+                    b.send_text(ev, '棋盘被翻，棋局解散\n用时详情：{}'.format(get_players_time()))
                 else:
                     b.send_text(ev, '啪，{} 你直接把棋盘翻了个底朝天，棋局解散'.format(ev.sender_name))
                 game_over(control)
@@ -563,12 +566,12 @@ def chinese_chess(b: bot, ev: event) -> bool:
                 winner = winner + i.name + ' '
 
         players[control.step % lens].used_time += time.time() - control.last_step_time
-        control.round_count = int(control.step / 2) + 1
+        control.round_count = math.ceil(control.step / 2)
         if lens == 2:
-            b.send_text(ev, '{}方( {})认输，恭喜 {}获得胜利！\n对局回合数：{}\n对局用时：{}\n用时详情：\n{}'.format(
+            b.send_text(ev, '{}方( {})认输，恭喜 {}获得胜利！\n对局回合数：{}\n对局用时：{}\n用时详情：{}'.format(
                 lose_team, loser, winner, control.round_count, control.getTotalTime(), get_players_time()))
         elif lens == 4:
-            b.send_text(ev, '恭喜 {}战胜了 {}！\n对局回合数：{}\n对局用时：{}\n用时详情：\n{}'.format(
+            b.send_text(ev, '恭喜 {}战胜了 {}！\n对局回合数：{}\n对局用时：{}\n用时详情：{}'.format(
                 winner, loser, control.round_count, control.getTotalTime(), get_players_time()))
         else:
             b.send_text(ev, '出错啦，麻烦踢一脚作者。[feature chinese_chess] msg=认输 index={}'.format(index))
@@ -606,7 +609,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
                     else:
                         lose = lose + player.name + ' '
                 time.sleep(0.5)
-                b.send_text(ev, '经过{}个回合，恭喜 {}战胜了 {}！\n对局用时：{}\n用时详情：\n{}'.format(
+                b.send_text(ev, '经过{}个回合，恭喜 {}战胜了 {}！\n对局用时：{}\n用时详情：{}'.format(
                     control.round_count, win, lose, control.getTotalTime(), get_players_time()))
                 game_over(control)
 
@@ -614,6 +617,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
         if sender == current.qq:
             to_mov(current)
         return True
+
     elif msg == '悔棋':
         control = get_control()
         if control.status != 'has_began':
@@ -629,13 +633,13 @@ def chinese_chess(b: bot, ev: event) -> bool:
             return True
         try:
             control.back_to_last_step()
-            img_path = control.paint_map()
-            url = "file:///" + os.path.join(img_path)
+            control.paint_map()
+            url = "file:///" + str(control.path)
             b.send_image(ev, url=url)
-            os.remove(img_path)
         except Exception as e:
             if isinstance(e, ChessExcept):
                 b.send_text(ev, str(e))
+
     elif msg == '请求接手':
         control = get_control()
         if control.status != 'has_began':
@@ -657,6 +661,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
         notice = [at, answer]
         b.send_custom_msg(ev, notice)
         return True
+
     elif msg == '接手':
         control = get_control()
         if control.status != 'has_began':
@@ -697,11 +702,25 @@ def chinese_chess(b: bot, ev: event) -> bool:
         while idx < lens:
             if players[idx].propose_peace:
                 game_over(control)
-                b.send_text(ev, '以和为贵！\n对局回合数：{}\n对局用时：{}\n用时详情：\n{}'.format(control.round_count,
-                            control.getTotalTime(),get_players_time()))
+                b.send_text(ev, '以和为贵！\n对局回合数：{}\n对局用时：{}\n用时详情：{}'.format(control.round_count,
+                                                                                            control.getTotalTime(),
+                                                                                            get_players_time()))
                 return True
             idx += 2
         return True
+
+    elif msg[0:4] == '切换棋盘':
+        control = get_control()
+        if control.status == 'not_begin':
+            return True
+        map_name = msg[5:]
+        players: list[ChessPlayer | None] = chess_dic[location]['player']
+        lens = len(players)
+        is_player, idx = is_sender_in_player()
+        if not is_player:
+            return True
+        if map_name == '':
+            b.send_text(ev, '')
 
     return False
 

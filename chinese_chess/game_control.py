@@ -26,42 +26,54 @@ class GameControl:
                                               [None, None, None, None, None, None, None, None, None],
                                               [None, None, None, None, None, None, None, None, None]]
 
+        # 棋盘风格
+        self.red_map_style = MapStyle.default
+        self.black_map_style = MapStyle.default
+        # 棋子风格
+        self.red_chess_style = ChessStyle.default
+        self.black_chess_style = ChessStyle.default
+        # 棋盘路径
+        self.map_dir = Path(work_dir, 'chinese_chess', 'image', 'map')
+        # 棋子路径
+        self.chess_dir = Path(work_dir, 'chinese_chess', 'image', 'chess')
+        # 提示路径
+        self.reminder_dir = Path(work_dir, 'chinese_chess', 'image', 'move_remind')
         # 棋子对象池,所有棋盘共享,类的内部可访问，外部无法访问。只读不改。
         self.__chess_list = [
             # -------------黑方初始化------------------
-            Car(Team.Black, 0, 0),
-            Horse(Team.Black, 0, 1),
-            Elephant(Team.Black, 0, 2),
-            Guard(Team.Black, 0, 3),
-            Commander(Team.Black, 0, 4),
-            Guard(Team.Black, 0, 5),
-            Elephant(Team.Black, 0, 6),
-            Horse(Team.Black, 0, 7),
-            Car(Team.Black, 0, 8),
-            Artillery(Team.Black, 2, 1),
-            Artillery(Team.Black, 2, 7),
-            Soldier(Team.Black, 3, 0),
-            Soldier(Team.Black, 3, 2),
-            Soldier(Team.Black, 3, 4),
-            Soldier(Team.Black, 3, 6),
-            Soldier(Team.Black, 3, 8),
+            Car(Team.Black, 0, 0, Path(self.chess_dir, self.black_chess_style, 'black_rook.png')),
+            Horse(Team.Black, 0, 1, Path(self.chess_dir, self.black_chess_style, 'black_knight.png')),
+            Elephant(Team.Black, 0, 2, Path(self.chess_dir, self.black_chess_style, 'black_elephant.png')),
+            Guard(Team.Black, 0, 3, Path(self.chess_dir, self.black_chess_style, 'black_mandarin.png')),
+            Commander(Team.Black, 0, 4, Path(self.chess_dir, self.black_chess_style, 'black_king.png')),
+            Guard(Team.Black, 0, 5, Path(self.chess_dir, self.black_chess_style, 'black_mandarin.png')),
+            Elephant(Team.Black, 0, 6, Path(self.chess_dir, self.black_chess_style, 'black_elephant.png')),
+            Horse(Team.Black, 0, 7, Path(self.chess_dir, self.black_chess_style, 'black_knight.png')),
+            Car(Team.Black, 0, 8, Path(self.chess_dir, self.black_chess_style, 'black_rook.png')),
+            Artillery(Team.Black, 2, 1, Path(self.chess_dir, self.black_chess_style, 'black_cannon.png')),
+            Artillery(Team.Black, 2, 7, Path(self.chess_dir, self.black_chess_style, 'black_cannon.png')),
+            Soldier(Team.Black, 3, 0, Path(self.chess_dir, self.black_chess_style, 'black_pawn.png')),
+            Soldier(Team.Black, 3, 2, Path(self.chess_dir, self.black_chess_style, 'black_pawn.png')),
+            Soldier(Team.Black, 3, 4, Path(self.chess_dir, self.black_chess_style, 'black_pawn.png')),
+            Soldier(Team.Black, 3, 6, Path(self.chess_dir, self.black_chess_style, 'black_pawn.png')),
+            Soldier(Team.Black, 3, 8, Path(self.chess_dir, self.black_chess_style, 'black_pawn.png')),
             # -------------红方初始化------------------
-            Car(Team.Red, 9, 0),
-            Horse(Team.Red, 9, 1),
-            Elephant(Team.Red, 9, 2),
-            Guard(Team.Red, 9, 3),
-            Commander(Team.Red, 9, 4),
-            Guard(Team.Red, 9, 5),
-            Elephant(Team.Red, 9, 6),
-            Horse(Team.Red, 9, 7),
-            Car(Team.Red, 9, 8),
-            Artillery(Team.Red, 7, 1),
-            Artillery(Team.Red, 7, 7),
-            Soldier(Team.Red, 6, 0),
-            Soldier(Team.Red, 6, 2),
-            Soldier(Team.Red, 6, 4),
-            Soldier(Team.Red, 6, 6),
-            Soldier(Team.Red, 6, 8)
+            Car(Team.Red, 9, 0, Path(self.chess_dir, self.black_chess_style, 'red_rook.png')),
+            Horse(Team.Red, 9, 1, Path(self.chess_dir, self.black_chess_style, 'red_knight.png')),
+            Elephant(Team.Red, 9, 2, Path(self.chess_dir, self.black_chess_style, 'red_elephant.png')),
+            Guard(Team.Red, 9, 3, Path(self.chess_dir, self.black_chess_style, 'red_mandarin.png')),
+            Commander(Team.Red, 9, 4, Path(self.chess_dir, self.black_chess_style, 'red_king.png')),
+            Guard(Team.Red, 9, 5, Path(self.chess_dir, self.black_chess_style, 'red_mandarin.png')),
+            Elephant(Team.Red, 9, 6, Path(self.chess_dir, self.black_chess_style, 'red_elephant.png')),
+            Horse(Team.Red, 9, 7, Path(self.chess_dir, self.black_chess_style, 'red_knight.png')),
+            Car(Team.Red, 9, 8, Path(self.chess_dir, self.black_chess_style, 'red_rook.png')),
+            Artillery(Team.Red, 7, 1, Path(self.chess_dir, self.black_chess_style, 'red_cannon.png')),
+            Artillery(Team.Red, 7, 7, Path(self.chess_dir, self.black_chess_style, 'red_cannon.png')),
+            Soldier(Team.Red, 6, 0, Path(self.chess_dir, self.black_chess_style, 'red_pawn.png')),
+            Soldier(Team.Red, 6, 2, Path(self.chess_dir, self.black_chess_style, 'red_pawn.png')),
+            Soldier(Team.Red, 6, 4, Path(self.chess_dir, self.black_chess_style, 'red_pawn.png')),
+            Soldier(Team.Red, 6, 6, Path(self.chess_dir, self.black_chess_style, 'red_pawn.png')),
+            Soldier(Team.Red, 6, 8, Path(self.chess_dir, self.black_chess_style, 'red_pawn.png'))
         ]
         # 该谁走棋了
         self.turn = Turn.Red
@@ -93,18 +105,6 @@ class GameControl:
         self.last_step_time = 0
         # 当前步用时
         self.current_step_time = 0
-        # 棋盘风格
-        self.red_map_style = MapStyle.default
-        self.black_map_style = MapStyle.default
-        # 棋子风格
-        self.red_chess_style = ChessStyle.default
-        self.black_chess_style = ChessStyle.default
-        # 棋盘路径
-        self.map_dir = Path(work_dir, 'chinese_chess', 'image', 'map')
-        # 棋子路径
-        self.chess_dir = Path(work_dir, 'chinese_chess', 'image', 'chess')
-        # 提示路径
-        self.reminder_dir = Path(work_dir, 'chinese_chess', 'image', 'move_remind')
 
     # 将空棋盘变为初始化棋盘
     def init_map(self):
@@ -362,6 +362,10 @@ class GameControl:
         total_second = int(time.time() - self.start_time)
         return get_time_str(total_second)
 
+    def change_map_style(self, style: str, team: str):
+        if team == Team.Red:
+            self.red_map_style = style
 
-if __name__ == '__main__':
-    pass
+    def change_chess_style(style: ChessStyle, team: Team):
+        pass
+

@@ -1,14 +1,11 @@
 from chinese_chess.chess import Chess
 from chinese_chess.chess_except import CommandExcept, MoveExcept
 from chinese_chess.enum import Team
+from pathlib import Path
 
 
 class Horse(Chess):  # 马
-    def __init__(self, team: str, x: int, y: int):
-        if team == Team.Red:
-            img = 'red_knight.png'
-        else:
-            img = 'black_knight.png'
+    def __init__(self, team: str, x: int, y: int, img: Path):
         super(Horse, self).__init__(team, img, x, y, '马')
 
     def move(self, command: str, mp):
@@ -71,11 +68,7 @@ class Horse(Chess):  # 马
 
 
 class Car(Chess):  # 车
-    def __init__(self, team: str, x: int, y: int):
-        if team == Team.Black:
-            img = 'black_rook.png'
-        else:
-            img = 'red_rook.png'
+    def __init__(self, team: str, x: int, y: int, img: Path):
         super(Car, self).__init__(team, img, x, y, '车')
 
     def move(self, command: str, mp):
