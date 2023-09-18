@@ -703,8 +703,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
             if players[idx].propose_peace:
                 game_over(control)
                 b.send_text(ev, '以和为贵！\n对局回合数：{}\n对局用时：{}\n用时详情：{}'.format(control.round_count,
-                                                                                            control.getTotalTime(),
-                                                                                            get_players_time()))
+                            control.getTotalTime(),get_players_time()))
                 return True
             idx += 2
         return True
@@ -719,8 +718,9 @@ def chinese_chess(b: bot, ev: event) -> bool:
         is_player, idx = is_sender_in_player()
         if not is_player:
             return True
-        if map_name == '':
-            b.send_text(ev, '')
+        if map_name:
+            b.send_text(ev, '还在制作中ing')
+        return True
 
     return False
 
