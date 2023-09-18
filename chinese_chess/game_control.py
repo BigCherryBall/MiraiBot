@@ -364,5 +364,4 @@ class GameControl:
 
 
 if __name__ == '__main__':
-    m = GameControl().paint_map()
-    print(m.filename, m.mode)
+    pass
