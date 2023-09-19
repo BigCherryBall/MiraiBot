@@ -9,11 +9,12 @@ class Turn:
 
 
 class MapStyle:
-    default = 'default'
+    default = '默认'
     flower_dancer = '花时舞者-绫华'
     mao_mao = '清凉夏日-猫羽雫'
     chang_e = '拒霜思-嫦娥'
-
+    zhong_wu_yan1 = '超时空战士-钟无艳'
+    zhong_wu_yan2 = '王者之锤-钟无艳'
 
     @staticmethod
     def getStyle(name: str) -> str:
@@ -25,13 +26,16 @@ class MapStyle:
             return MapStyle.default
         elif name == MapStyle.chang_e:
             return MapStyle.chang_e
+        elif name == MapStyle.zhong_wu_yan1:
+            return MapStyle.zhong_wu_yan1
+        elif name == MapStyle.zhong_wu_yan2:
+            return MapStyle.zhong_wu_yan2
         else:
             return ''
-            
 
     @staticmethod
-    def toString() ->str :
-        return "[默认，清凉一夏-猫羽雫，花时舞者-绫华，拒霜思-嫦娥]"
+    def toString() -> str:
+        return "[默认，清凉夏日-猫羽雫，花时舞者-绫华，拒霜思-嫦娥，超时空战士-钟无艳，王者之锤-钟无艳]"
 
 
 class ChessStyle:

@@ -136,12 +136,6 @@ class GameControl:
         self.last_step_time = self.start_time
         # 当前步用时
         self.current_step_time = 0
-        # 棋盘风格
-        self.red_map_style = MapStyle.default
-        self.black_map_style = MapStyle.default
-        # 棋子风格
-        self.red_chess_style = ChessStyle.default
-        self.black_chess_style = ChessStyle.default
         # -------------从棋子对象池里面读取数据------------------
         for chess in self.__chess_list:
             chess.back_to_init_pos()
@@ -300,20 +294,20 @@ class GameControl:
             pic = Image.open(Path(self.map_dir, self.black_map_style, 'map_black.jpg')).convert('RGB')
         # 先画位置提示:
         if self.turn == Turn.Red:
-            begin = Image.open(Path(self.reminder_dir, 'default', 'black_begin.jpg'))
-            end = Image.open(Path(self.reminder_dir, 'default', 'black_end.jpg'))
-            pic.paste(begin, (8 + self.__y * 80, 18 + self.__x * 80))
-            pic.paste(end, (4 + self.__new_y * 80, 14 + self.__new_x * 80))
+            begin = Image.open(Path(self.reminder_dir, 'default', 'black_begin.png'))
+            end = Image.open(Path(self.reminder_dir, 'default', 'black_end.png'))
+            pic.paste(begin, (8 + self.__y * 80, 18 + self.__x * 80), begin)
+            pic.paste(end, (4 + self.__new_y * 80, 14 + self.__new_x * 80), end)
         else:
-            begin = Image.open(Path(self.reminder_dir, 'default', 'red_begin.jpg'))
-            end = Image.open(Path(self.reminder_dir, 'default', 'red_end.jpg'))
-            pic.paste(begin, (8 + (8 - self.__y) * 80, 18 + (9 - self.__x) * 80))
-            pic.paste(end, (4 + (8 - self.__new_y) * 80, 14 + (9 - self.__new_x) * 80))
+            begin = Image.open(Path(self.reminder_dir, 'default', 'red_begin.png'))
+            end = Image.open(Path(self.reminder_dir, 'default', 'red_end.png'))
+            pic.paste(begin, (8 + (8 - self.__y) * 80, 18 + (9 - self.__x) * 80), begin)
+            pic.paste(end, (4 + (8 - self.__new_y) * 80, 14 + (9 - self.__new_x) * 80), end)
         # 再画棋子
         for row in self.map:
             for chess in row:
                 if chess:  # 如果不为None
-                    img = Image.open(Path(self.chess_dir, self.red_chess_style, chess.image))
+                    img = chess.image
                     if self.turn == Turn.Black:
                         y = 8 - chess.pos.y
                         x = 9 - chess.pos.x
@@ -365,6 +359,10 @@ class GameControl:
     def change_map_style(self, style: str, team: str):
         if team == Team.Red:
             self.red_map_style = style
+        else:
+            self.black_map_style = style
+
+        print('set map',team, style)
 
     def change_chess_style(style: ChessStyle, team: Team):
         pass

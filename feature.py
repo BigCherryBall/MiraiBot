@@ -591,8 +591,10 @@ def chinese_chess(b: bot, ev: event) -> bool:
             except Exception as ex:
                 if isinstance(ex, ChessExcept):
                     b.send_text(ev, str(ex))
+                    return True
                 else:
                     print('[feature chinese_chess] to_mov function error: ' + str(ex))
+                    return True
             current_player.used_time += control.current_step_time
             control.paint_map()
             url_ = "file:///" + str(control.path)
@@ -708,18 +710,25 @@ def chinese_chess(b: bot, ev: event) -> bool:
             idx += 2
         return True
 
-    elif msg[0:4] == '切换棋盘':
+    elif msg[0:4] == '切换棋盘' or msg[0:4] == '更换棋盘':
         control = get_control()
         if control.status == 'not_begin':
             return True
         map_name = msg[5:]
         players: list[ChessPlayer | None] = chess_dic[location]['player']
-        lens = len(players)
         is_player, idx = is_sender_in_player()
         if not is_player:
+            b.send_text(ev, ev.sender_name + '，你还没有加入，不可以更换棋盘')
             return True
         if MapStyle.getStyle(map_name):
-            b.send_text(ev, '还在制作中ing')
+            control.change_map_style(map_name, players[idx].team)
+            b.send_text(ev, '更换棋盘 {} 成功'.format(map_name))
+        else:
+            b.send_text(ev, '棋盘不存在，更换失败')
+        return True
+
+    elif msg == '棋盘样式':
+        b.send_text(ev, '可选棋盘样式名字如下：' + MapStyle.toString() + '\n\n发送\'更换棋盘 棋盘名\'即可更换棋盘哦~')
         return True
 
     return False
