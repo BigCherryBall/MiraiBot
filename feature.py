@@ -3,7 +3,7 @@ import re
 import time
 from bot import bot
 from chinese_chess.chess_except import ChessExcept
-from chinese_chess.enum import Team
+from chinese_chess.enum import MapStyle, Team
 from chinese_chess.game_control import GameControl
 from event import Type, event
 from one_day_poetry import *
@@ -718,7 +718,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
         is_player, idx = is_sender_in_player()
         if not is_player:
             return True
-        if map_name:
+        if MapStyle.getStyle(map_name):
             b.send_text(ev, '还在制作中ing')
         return True
 
@@ -809,7 +809,7 @@ def genshinCharacterMsg(b: bot, ev: event) -> bool:
             file.write(response.content)
             b.send_image(ev, "file:///" + str(filename))
     else:
-        b.send_text(ev, "角色不存在，获取图片失败")
+        b.send_text(ev, "网站崩了，获取图片失败")
 
     return True
 
