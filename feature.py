@@ -19,7 +19,7 @@ img_root = Path(Path.cwd(), 'image')
 time_out = (10, 30)
 
 # 2.0版本新增桑帛云api
-sby_api = 'https://api.lolimi.cn/api/'
+sby_api = 'https://api.lolimi.cn/API/'
 
 
 def getSendDelTempImage(b: bot, ev: event, url, data, error_msg='请求图片失败'):
@@ -937,7 +937,7 @@ def getWeatherMaolinbian(b: bot, ev: event) -> bool:
         city = it[0]
     else:
         return False
-    url_mao_weather = sby_api + 'qqtq/t?key=sp4mVsMIBiBslhw56QfpHDXIkg'
+    url_mao_weather = sby_api + 'weather/'
     getSendDelTempImage(b, ev, url_mao_weather, data={"msg": city}, error_msg="获取天气失败")
     return True
 

@@ -6,14 +6,15 @@ from event import event, Type
 import feature as f
 import asyncio
 import schedule
+from tool import config
 
 __version__ = 4.1
 
 
 class bot:
-    def __init__(self, address, port=5700, authKey = "BigCherryBall"):
-        self.author = 2655602003
-        self.bot_qq = 1969712698
+    def __init__(self, address, port=config['http_port'], authKey = "BigCherryBall"):
+        self.author = config['author_qq']
+        self.bot_qq = config['bot_qq']
         self.conn = http.client.HTTPConnection(address, port)
         self.authKey = authKey
         self.sessionKey = self.bind()
