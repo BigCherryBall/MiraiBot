@@ -1003,6 +1003,24 @@ def interesting_feature(b: bot, ev: event) -> bool:
         data = [at, m1, flower, flower, flower, huanying, m2, doge]
         b.send_custom_msg(ev, data)
         return True
+    
+    elif msg == 'cos' or msg == 'cosplay' or msg == 'c图':
+        response = requests.post('https://api.lolimi.cn/API/cosplay/api.php', data=None, timeout=time_out)
+        if response.status_code == 200:
+            cos_url = response.json()['data']['data'][0]
+            b.send_image(ev, cos_url)
+            return True
+        else:
+            b.send_text(ev, '请求失败')
+
+    elif msg == '美女' or msg == '美人':
+        response = requests.post('https://api.lolimi.cn/API/meinv/api.php', data=None, timeout=time_out)
+        if response.status_code == 200:
+            beaty_url = response.json()['data']['image']
+            b.send_image(ev, beaty_url)
+            return True
+        else:
+            b.send_text(ev, '请求失败')
 
     return False
 
