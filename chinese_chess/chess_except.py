@@ -25,5 +25,5 @@ class ChessNotFindExcept(CommandExcept):
 
 
 class BackExcept(ChessExcept):
-    def __init__(self,msg='当前步不是最新步，无法悔棋'):
+    def __init__(self, msg='当前步不是最新步，无法悔棋'):
         self.msg = msg

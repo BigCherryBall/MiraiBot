@@ -33,7 +33,7 @@ def getSendDelTempImage(b: bot, ev: event, url, data, error_msg='请求图片失
                 b.send_image(ev, "file:///" + str(file_name))
                 file_name.unlink()
         else:
-            b.send_text(ev, error_answer)
+            b.send_text(ev, error_msg)
     except Exception as e:
         print('[feature getSendDelTempImage] error :' + str(e))
         b.send_text(ev, error_msg)
@@ -45,7 +45,7 @@ def getSendText(b: bot, ev: event, url, data, error_msg='请求失败'):
         if response.status_code == 200:
             b.send_text(ev, response.json()['data']['text'])
         else:
-            b.send_text(ev, error_answer)
+            b.send_text(ev, error_msg)
     except Exception as e:
         print('[feature getSendText] error :' + str(e))
         b.send_text(ev, error_msg)
@@ -57,7 +57,7 @@ private_chat_dic = defaultdict(list)
 group_explain = '其他人每次提问时，都会在冒号前标注对话人的姓名或者昵称。'
 private_explain = '我的名字叫{}。'
 # 不同个性的设定
-role = {
+_role_ = {
     '美少女': '请使用温柔的、可爱的、友好的语言风格交流，扮演一个18岁的美少女，名字叫丸子，目前就读于清华大学，是一个清纯的大学生，喜欢吃菠萝，喜欢跑步。',
     '猫娘': '请使用女性化的、口语化的、可爱的、调皮的、幽默的、傲娇的语言风格，扮演一个猫娘，名字叫做丸子。当别人想和你贴贴和抱抱时，你要乐意哦。',
     '姐姐': '请你使用女性化的、温柔的、关心的、亲切的语言风格，扮演一个姐姐形象，名字叫做丸子。',
@@ -81,19 +81,39 @@ role = {
 是”客卿“。你对他的做法不太满意，但是他却非常欣赏你。\n6.你的同事有：凝光（天权星），甘雨（秘书）。\n7.',
 '''
 # 不同location_id的角色
-private_role = {}
-# openai
-url55 = sby_api + 'ai/wx?key=sp4mVsMIBiBslhw56QfpHDXIkg'
-# 出错回复
-error_answer = ['抱歉，这个问题丸子还没想到~', '丸子饿了，需要吃美刀。。。', '回答你这个问题需要先v我50，我去更换api_key',
-                '出现错误,帮忙踢一脚作者,多半是没开代理,或者免费api_key12月1日到期,记得更换。',
-                'emmm，这个问题丸子也不知道哦~']
+role = ['空', '荧', '派蒙', '纳西妲', '阿贝多', '温迪', '枫原万叶', '钟离', '荒泷一斗', '八重神子',
+        '艾尔海森', '提纳里', '迪希雅', '卡维', '宵宫', '莱依拉', '赛诺', '诺艾尔', '托马', '凝光',
+        '莫娜', '北斗', '神里绫华', '雷电将军', '芭芭拉', '鹿野院平藏', '五郎', '迪奥娜', '凯亚',
+        '安柏', '班尼特', '琴', '柯莱', '夜兰', '妮露', '辛焱', '珐露珊', '魈', '香菱', '达达利亚',
+        '砂糖', '早柚', '云堇', '刻晴', '丽莎', '迪卢克', '烟绯', '重云', '珊瑚宫心海', '胡桃', '可莉',
+        '流浪者', '久岐忍', '神里绫人', '甘雨', '优菈', '菲谢尔', '行秋', '白术', '九条裟罗', '雷泽', '申鹤',
+        '罗莎莉亚', '绮良良', '瑶瑶', '七七', '奥兹', '米卡', '夏洛蒂', '埃洛伊', '博士', '女士', '大慈树王',
+        '三月七', '克拉拉', '希儿', '布洛妮娅', '瓦尔特', '姬子', '艾丝妲', '穹', '卡芙卡', '可可利亚', '丽塔',
+        '莉莉娅', '萝莎莉娅', '八重樱', '姬子', '布洛妮娅', '理之律者', '真理之律者', '迷城骇兔', '希儿',
+        '魇夜星渊', '黑希儿', '帕朵菲莉丝', '幽兰黛尔', '德丽莎', '月下初拥', '朔夜观星', '明日香', '人之律者',
+        '爱莉希雅', '爱衣', '天穹游侠', '琪亚娜', '空之律者', '终焉之律者', '薪炎之律者', '云墨丹心', '符华',
+        '识之律者', '维尔薇', '芽衣', '雷之律者']
+
+private_role = defaultdict(str)
 
 
 def normal_chat(b: bot, ev: event):
     if not power["聊天"]:
         return False
     message = ev.message
+    if message[0:4] == '切换角色':
+        r = message[5:]
+        if message[4:4] != ' ' or (not r):
+            b.send_text(ev, '切换失败，命令格式错误，使用\'切换角色 角色名\'即可切换角色语音，发送\'可选角色\'即可查看角色列表')
+            return True
+        if r in role:
+            private_role[ev.sender_id] = r
+            b.send_text(ev, '切换成功，语音角色变为' + r)
+        return True
+
+    if message == '可选角色':
+        b.send_text(ev, '目前可选语音角色如下：\n' + str(role).replace('\'', '') + '\n\n发送切换角色+角色名可以切换角色')
+        return True
     if ev.where == 'group':
         if not ev.at:
             pattern = re.compile(
@@ -106,13 +126,23 @@ def normal_chat(b: bot, ev: event):
             message = item
         elif ev.at != 1969712698 or (not message):
             return False
-    if not (ev.sender_id in list(private_role.keys())):
-        private_role[ev.sender_id] = '美少女'
+    if not private_role[ev.sender_id]:
+        private_role[ev.sender_id] = '神里绫华'
     if ev.face:
         message = message + "(表情：" + ev.face + ")"
-    ev.message = '百度 请补充下列对话。问:请使用女性化的、口语化的、可爱的、调皮的、幽默的、傲娇的语言风格，扮演一个猫娘，名字叫做丸子。当我想和你贴贴和抱抱时，你要乐意哦。 答:好的，我是丸子，是一只\
-可爱的猫娘，喵~ ' + ' 问:' + message + '。 答:'
-    chatGPT(b, ev)
+    response = requests.post('https://api.lolimi.cn/API/AI/ys3.5.php?msg={}&speaker={}'.format(
+                            message, private_role[ev.sender_id]), timeout=(10, 30))
+    try:
+        re_json = response.json()
+        if re_json['code'] != 1:
+            b.send_text(ev, '网站垃圾，请求失败')
+            return True
+        b.send_voice(ev, re_json['music'])
+        return True
+
+    except Exception as e:
+        b.send_text(ev, '出错啦！')
+        print('[feature normal_chat]error : ' + str(e))
     return True
 
 
@@ -152,12 +182,14 @@ def change_role(b: bot, ev: event):
     return True
 
 
-power = {"菜单": True, "聊天": True, '发图': True, '防撤回': False, '象棋': True, '原神': True, '表情包': True,
+power = {'总': True, "菜单": True, "聊天": True, '发图': True, '防撤回': False, '象棋': True, '原神': True, '表情包': True,
          '角色扮演': True}
 
 
 def menu(b: bot, ev: event):
     if ev.message == '菜单' or ev.message == 'help' or ev.message == '帮助':
+        if not power['菜单']:
+            return True
         b.send_text(ev,
                     '喵~目前有的功能如下:\n' +
                     '1.AI聊天:gpt4 内容，百度 内容\n' +
@@ -165,7 +197,9 @@ def menu(b: bot, ev: event):
                     '3.天气:天气 城市\n' +
                     '4.防撤回:目前状态({})\n'.format('开' if power['防撤回'] else '关') +
                     '5.中国象棋/联棋\n' +
-                    '6.表情制作:发送“表情列表”即可查看所有可选表情包'.format('开' if power['防撤回'] else '关'))
+                    '6.表情制作:发送“表情列表”即可查看所有可选表情包\n' +
+                    '7.语音聊天:使用\'丸子...\'聊天，发送“可选角色”即可查看所有可选语音回复角色\n' +
+                    '8.搜图:搜图 描述')
         return True
     else:
         return False
@@ -749,32 +783,32 @@ genshin_weapon_list = ['若水', '波乱月白经津', '辰砂之纺锤', '天�
 def chatGPT(b: bot, ev: event):
     if not power["聊天"]:
         return False
-    url_wx = sby_api + 'ai/wx?key=sp4mVsMIBiBslhw56QfpHDXIkg'
-    url_gtp4 = sby_api + 'ai/gpt-4?key=0GVAs86wZ4KHQA5BOolBJhIzeY'
+    url_wx = 'https://api.lolimi.cn/API/AI/wx.php'
+    url_gtp4 = 'https://api.lolimi.cn/API/AI/mfcat3.5.php?type=json'
     url = url_wx
     message = ev.message
     if ev.where == 'group':
-        if not ev.at:
-            pattern1 = re.compile('^gpt4 (.+)$')
-            pattern2 = re.compile('^百度 (.+)$')
-            item1 = re.findall(pattern1, message)
-            item2 = re.findall(pattern2, message)
-            if item1:
-                url = url_gtp4
-                message = item1[0]
-            elif item2:
-                url = url_wx
-                message = item2[0]
-            else:
-                return False
-        elif ev.at != b.bot_qq or (not message):
+        pattern1 = re.compile('^gpt4 (.+)$')
+        pattern2 = re.compile('^百度 (.+)$')
+        item1 = re.findall(pattern1, message)
+        item2 = re.findall(pattern2, message)
+        if item1:
+            url = url_gtp4
+            message = item1[0]
+        elif item2:
+            url = url_wx
+            message = item2[0]
+        else:
             return False
     # 发送post请求
     response = requests.post(url, data={"msg": message}, timeout=time_out)
     if response.status_code == 200:
         try:
             # 获取响应内容
-            result = response.json()['data']['output']
+            if url == url_gtp4:
+                result = response.json()['data']
+            else:
+                result = response.json()['data']['output']
             b.send_text(ev, result)
         except Exception as e:
             print('[chatGPT] get response error:' + str(e))
@@ -859,8 +893,7 @@ def headPicture2Image(b: bot, ev: event) -> bool:
     if not power['表情包']:
         return False
     if ev.message == '表情列表':
-        b.send_text(ev, '目前可制作表情的命令有：' + (str(image_list)).replace('\'',
-                                                                              '') + '\n\n注：除了艾特，使用：命令#qq号 也可以')
+        b.send_text(ev, '目前可制作表情的命令有：' + (str(image_list)).replace('\'', '') + '\n\n注：除了艾特，使用：命令#qq号 也可以')
         return True
     msg = ev.message
     is_match = True
@@ -944,6 +977,7 @@ def getWeatherMaolinbian(b: bot, ev: event) -> bool:
 
 def getFaceImage(b: bot, ev: event) -> bool:
     if not power['表情包']:
+        b.send_text(ev, '本群权限未开启')
         return False
     if '柴郡' == ev.message:
         url_chaijun = sby_api + 'chai/c?key=sp4mVsMIBiBslhw56QfpHDXIkg'
@@ -1021,6 +1055,32 @@ def interesting_feature(b: bot, ev: event) -> bool:
             return True
         else:
             b.send_text(ev, '请求失败')
+
+    elif msg == '原神壁纸':
+        response = requests.post('https://api.lolimi.cn/API/yuan/', timeout=time_out)
+        if response.status_code == 200:
+            img_url = response.json()['text']
+            b.send_image(ev, img_url)
+            return True
+        else:
+            b.send_text(ev, '请求失败')
+        return True
+
+    elif msg[0:2] == '搜图':
+        if msg[2:2] != ' ' or (not msg[3:]):
+            b.send_text(ev, '命令格式错误，使用\'搜图 图名\'搜图')
+            return True
+        response = requests.post('https://api.lolimi.cn/API/sgst/api.php?msg=' + msg[3:], timeout=time_out)
+        if response.status_code == 200:
+            re_json = response.json()
+            if re_json['code'] == 1:
+                b.send_image(ev, re_json['data']['url'])
+            else:
+                b.send_text(ev, '参数错误')
+            return True
+        else:
+            b.send_text(ev, '请求失败')
+        return True
 
     return False
 

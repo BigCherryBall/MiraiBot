@@ -55,6 +55,16 @@ class bot:
         response = self.conn.getresponse()
         response.read()
 
+    def send_voice(self, ev: event, url):
+        sessionKey = self.sessionKey
+        js = json_deal.build_voice_json(sessionKey, ev.location_id, url)
+        if ev.where == 'group':
+            self.conn.request('POST', '/sendGroupMessage', js)
+        else:
+            self.conn.request('POST', '/sendFriendMessage', js)
+        response = self.conn.getresponse()
+        response.read()
+
     def send_m_i_m_i(self, ev: event, m1='', u1='', m2='', u2=''):
         msg_chain = []
         if m1:
@@ -127,6 +137,8 @@ class bot:
             print('[bot _step_deal_data] error:', e)
 
     def deal_data(self, data):
+        if not f.power['总']:
+            return
         # 这里是处理消息的代码，解析消息并进行回复
         for i in data:
             threading.Thread(target=self._step_deal_data, args=(i,)).start()
@@ -188,6 +200,16 @@ class json_deal:
             "sessionKey": sessionKey,
             "target": target,
             "messageChain": [{"type": "Image", "url": url}]
+        }
+        js = json.dumps(dic)
+        return js
+
+    @staticmethod
+    def build_voice_json(sessionKey, target, url):
+        dic = {
+            "sessionKey": sessionKey,
+            "target": target,
+            "messageChain": [{"type": "Voice", "url": url}]
         }
         js = json.dumps(dic)
         return js
