@@ -103,12 +103,15 @@ def normal_chat(b: bot, ev: event):
     message = ev.message
     if message[0:4] == '切换角色':
         r = message[5:]
-        if message[4:4] != ' ' or (not r):
+        if message[4:5] != ' ' or (not r):
             b.send_text(ev, '切换失败，命令格式错误，使用\'切换角色 角色名\'即可切换角色语音，发送\'可选角色\'即可查看角色列表')
             return True
         if r in role:
             private_role[ev.sender_id] = r
             b.send_text(ev, '切换成功，语音角色变为' + r)
+        else:
+            private_role[ev.sender_id] = role[random.randint(0, len(role))]
+            b.send_text(ev, '切换成功，已更换为' + r + '的语音~')
         return True
 
     if message == '可选角色':
@@ -124,7 +127,7 @@ def normal_chat(b: bot, ev: event):
                 return False
             item = items[0]
             message = item
-        elif ev.at != 1969712698 or (not message):
+        elif ev.at != b.bot_qq or (not message):
             return False
     if not private_role[ev.sender_id]:
         private_role[ev.sender_id] = '神里绫华'
@@ -133,12 +136,15 @@ def normal_chat(b: bot, ev: event):
     response = requests.post('https://api.lolimi.cn/API/AI/ys3.5.php?msg={}&speaker={}'.format(
                             message, private_role[ev.sender_id]), timeout=(10, 30))
     try:
-        re_json = response.json()
-        if re_json['code'] != 1:
-            b.send_text(ev, '网站垃圾，请求失败')
+        if response.status_code == 200:
+            re_json = response.json()
+            if re_json['code'] != 1:
+                b.send_text(ev, '网站垃圾，请求失败')
+                return True
+            b.send_voice(ev, re_json['music'])
             return True
-        b.send_voice(ev, re_json['music'])
-        return True
+        else:
+            b.send_text(ev, '服务器无响应')
 
     except Exception as e:
         b.send_text(ev, '出错啦！')
@@ -182,7 +188,7 @@ def change_role(b: bot, ev: event):
     return True
 
 
-power = {'总': True, "菜单": True, "聊天": True, '发图': True, '防撤回': False, '象棋': True, '原神': True, '表情包': True,
+power = {'总': True, "菜单": True, "聊天": True, '发图': True, '防撤回': False, '象棋': True, '原神': True, '表情包': False,
          '角色扮演': True}
 
 
@@ -197,9 +203,8 @@ def menu(b: bot, ev: event):
                     '3.天气:天气 城市\n' +
                     '4.防撤回:目前状态({})\n'.format('开' if power['防撤回'] else '关') +
                     '5.中国象棋/联棋\n' +
-                    '6.表情制作:发送“表情列表”即可查看所有可选表情包\n' +
-                    '7.语音聊天:使用\'丸子...\'聊天，发送“可选角色”即可查看所有可选语音回复角色\n' +
-                    '8.搜图:搜图 描述')
+                    '6.语音聊天:使用\'丸子...\'聊天，发送“可选角色”即可查看所有可选语音回复角色\n' +
+                    '7.搜图:搜图 描述')
         return True
     else:
         return False
@@ -1010,7 +1015,7 @@ def interesting_feature(b: bot, ev: event) -> bool:
     msg = ev.message
     if msg == '二次元的我':
         return True
-    elif msg == '啊' or msg == '阿':
+    elif msg == '阿':
         b.send_text(ev, '巴~')
         return True
     elif '柴郡' == msg:
@@ -1030,7 +1035,7 @@ def interesting_feature(b: bot, ev: event) -> bool:
         at = {'type': 'At', 'target': ev.sender_id, 'display': ''}
         m1 = {'type': 'Plain', 'text': ' 欢迎加入本群！'}
         flower = {'type': 'Face', 'faceId': 63, 'name': '玫瑰'}
-        url_huanying = "file:///" + str(Path(img_root, 'other', 'huanying1.jpg'))
+        url_huanying = "file:///" + str(Path(img_root, 'other', 'huanying' + str(random.randint(1,5)) + '.jpg'))
         huanying = {'type': 'Image', 'url': url_huanying}
         m2 = {'type': 'Plain', 'text': '发送\'菜单\'可查看本bot具有的功能哦'}
         doge = {'type': 'Face', 'faceId': 179, 'name': 'doge'}
@@ -1067,7 +1072,7 @@ def interesting_feature(b: bot, ev: event) -> bool:
         return True
 
     elif msg[0:2] == '搜图':
-        if msg[2:2] != ' ' or (not msg[3:]):
+        if msg[2:3] != ' ' or (not msg[3:]):
             b.send_text(ev, '命令格式错误，使用\'搜图 图名\'搜图')
             return True
         response = requests.post('https://api.lolimi.cn/API/sgst/api.php?msg=' + msg[3:], timeout=time_out)
@@ -1081,6 +1086,11 @@ def interesting_feature(b: bot, ev: event) -> bool:
         else:
             b.send_text(ev, '请求失败')
         return True
+    
+    elif msg == '皮卡丘呢':
+        b.send_text(ev, '那个带电的机器人吃饭去了')
+        return True
+
 
     return False
 

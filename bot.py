@@ -18,6 +18,7 @@ class bot:
         self.conn = http.client.HTTPConnection(address, port)
         self.authKey = authKey
         self.sessionKey = self.bind()
+        self.lock = threading.Lock()
 
     def bind(self):
         auth = json.dumps({"verifyKey": self.authKey})
@@ -33,36 +34,42 @@ class bot:
         data = response.read().decode('utf-8')
         print(data)
         return sessionKey
+    
+    def __conn_mirai__(self, method: str, url: str, js: str = None) -> http.client.HTTPResponse:
+        self.lock.acquire()
+        response = None
+        try:
+            self.conn.request(method, url, js)
+            response = self.conn.getresponse()
+        finally:
+            self.lock.release()
+            return response
 
     def send_text(self, ev: event, text):
         sessionKey = self.sessionKey
         js = json_deal.build_text_json(sessionKey, ev.location_id, text)
         if ev.where == 'group':
-            self.conn.request('POST', '/sendGroupMessage', js)
+            response = self.__conn_mirai__('POST', '/sendGroupMessage', js)
         else:
-            self.conn.request('POST', '/sendFriendMessage', js)
-
-        response = self.conn.getresponse()
+            response = self.__conn_mirai__('POST', '/sendFriendMessage', js)
         response.read()
 
     def send_image(self, ev: event, url):
         sessionKey = self.sessionKey
         js = json_deal.build_image_json(sessionKey, ev.location_id, url)
         if ev.where == 'group':
-            self.conn.request('POST', '/sendGroupMessage', js)
+            response = self.__conn_mirai__('POST', '/sendGroupMessage', js)
         else:
-            self.conn.request('POST', '/sendFriendMessage', js)
-        response = self.conn.getresponse()
+            response = self.__conn_mirai__('POST', '/sendFriendMessage', js)
         response.read()
 
     def send_voice(self, ev: event, url):
         sessionKey = self.sessionKey
         js = json_deal.build_voice_json(sessionKey, ev.location_id, url)
         if ev.where == 'group':
-            self.conn.request('POST', '/sendGroupMessage', js)
+            response = self.__conn_mirai__('POST', '/sendGroupMessage', js)
         else:
-            self.conn.request('POST', '/sendFriendMessage', js)
-        response = self.conn.getresponse()
+            response = self.__conn_mirai__('POST', '/sendFriendMessage', js)
         response.read()
 
     def send_m_i_m_i(self, ev: event, m1='', u1='', m2='', u2=''):
@@ -77,41 +84,35 @@ class bot:
             msg_chain.append({"type": "Image", "url": u2})
         js = json_deal.build_mix_json(self.sessionKey, ev.location_id, msg_chain)
         if ev.where == 'group':
-            self.conn.request('POST', '/sendGroupMessage', js)
+            response = self.__conn_mirai__('POST', '/sendGroupMessage', js)
         else:
-            self.conn.request('POST', '/sendFriendMessage', js)
-        response = self.conn.getresponse()
+            response = self.__conn_mirai__('POST', '/sendFriendMessage', js)
         response.read()
 
     def send_private_text(self, id, text):
         sessionKey = self.sessionKey
         js = json_deal.build_text_json(sessionKey, id, text)
-        self.conn.request('POST', '/sendFriendMessage', js)
-        response = self.conn.getresponse()
+        response = self.__conn_mirai__('POST', '/sendFriendMessage', js)
         response.read()
 
     def send_group_text(self, group_id, text: str):
         sessionKey = self.sessionKey
         js = json_deal.build_text_json(sessionKey, group_id, text)
-        self.conn.request('POST', '/sendGroupMessage', js)
-        response = self.conn.getresponse()
+        response = self.__conn_mirai__('POST', '/sendGroupMessage', js)
         response.read()
 
     def send_custom_msg(self, ev: event, data: list):
         sessionKey = self.sessionKey
         js = json_deal.build_mix_json(sessionKey, ev.location_id, data)
         if ev.where == 'group':
-            self.conn.request('POST', '/sendGroupMessage', js)
+            response = self.__conn_mirai__('POST', '/sendGroupMessage', js)
         else:
-            self.conn.request('POST', '/sendFriendMessage', js)
-        response = self.conn.getresponse()
-        res = response.read().decode('utf-8')
-        print(res)
+            response = self.__conn_mirai__('POST', '/sendFriendMessage', js)
+        response.read()
 
     def get_msg_by_id(self, location_id, msg_id):
-        self.conn.request('GET', '/messageFromId?sessionKey={}&messageId={}&target={}'.format(self.sessionKey, msg_id,
+        response = self.__conn_mirai__('GET', '/messageFromId?sessionKey={}&messageId={}&target={}'.format(self.sessionKey, msg_id,
                                                                                               location_id))
-        response = self.conn.getresponse()
         data = response.read().decode('utf-8')
         data = json.loads(data)
         return data
@@ -144,20 +145,17 @@ class bot:
             threading.Thread(target=self._step_deal_data, args=(i,)).start()
 
     async def fetch_message(self):
-        conn = self.conn
         sessionKey = self.sessionKey
         while True:
             try:
-                conn.request('GET', '/fetchLatestMessage?sessionKey=' + sessionKey + '&count=10')
-                response = conn.getresponse()
+                response = self.__conn_mirai__('GET', '/fetchLatestMessage?sessionKey=' + sessionKey + '&count=10')
                 data = response.read().decode('utf-8')
                 j = json.loads(data)
                 data = j["data"]
                 if data:
                     threading.Thread(target=self.deal_data, args=(data,)).start()  # 多线程启动
             except Exception as e:
-                print('except210')
-                print(e)
+                print('[feature fetch_message]error :' + str(e))
             await asyncio.sleep(1)
 
     async def run(self):
