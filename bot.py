@@ -1,4 +1,4 @@
-import http.client
+from http.client import HTTPConnection, HTTPResponse
 import json
 import sys
 import threading
@@ -8,14 +8,12 @@ import asyncio
 import schedule
 from tool import config
 
-__version__ = 4.1
-
 
 class bot:
     def __init__(self, address, port=config['http_port'], authKey = "BigCherryBall"):
         self.author = config['author_qq']
         self.bot_qq = config['bot_qq']
-        self.conn = http.client.HTTPConnection(address, port)
+        self.conn = HTTPConnection(address, port)
         self.authKey = authKey
         self.sessionKey = self.bind()
         self.lock = threading.Lock()
@@ -35,7 +33,7 @@ class bot:
         print(data)
         return sessionKey
     
-    def __conn_mirai__(self, method: str, url: str, js: str = None) -> http.client.HTTPResponse:
+    def __conn_mirai__(self, method: str, url: str, js: str = None) -> HTTPResponse:
         self.lock.acquire()
         response = None
         try:

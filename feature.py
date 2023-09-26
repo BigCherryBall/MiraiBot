@@ -134,7 +134,7 @@ def normal_chat(b: bot, ev: event):
     if ev.face:
         message = message + "(表情：" + ev.face + ")"
     response = requests.post('https://api.lolimi.cn/API/AI/ys3.5.php?msg={}&speaker={}'.format(
-                            message, private_role[ev.sender_id]), timeout=(10, 30))
+                            message, private_role[ev.sender_id]), timeout=time_out)
     try:
         if response.status_code == 200:
             re_json = response.json()
@@ -566,7 +566,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
         lens = len(players)
         if lens == 2 or lens == 4:
             is_player, idx = is_sender_in_player()
-            if not is_player:
+            if (not is_player) and sender != b.author:
                 return True
             if msg == '退出棋局':
                 if control.status == 'has_began':
@@ -975,8 +975,15 @@ def getWeatherMaolinbian(b: bot, ev: event) -> bool:
         city = it[0]
     else:
         return False
-    url_mao_weather = sby_api + 'weather/'
-    getSendDelTempImage(b, ev, url_mao_weather, data={"msg": city}, error_msg="获取天气失败")
+    response = requests.post('https://api.lolimi.cn/API/tqtq/api.php?msg={}&b=1'.format(city))
+    if response.status_code == 200:
+        data = response.json()['data'][data]
+        result = city + '最近三天天气如下：\n'
+        for i in data:
+            result = result + '{}，{}，{}，{}，空气质量{}\n'.format(i['Time'],i['temperature'],i['weather'],i['bearing'],i['air_quality'])
+        b.send_text(ev, result)
+    else:
+        b.send_text(ev, '网站崩了，请求失败')
     return True
 
 
