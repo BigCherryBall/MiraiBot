@@ -789,7 +789,7 @@ def chatGPT(b: bot, ev: event):
     if not power["聊天"]:
         return False
     url_wx = 'https://api.lolimi.cn/API/AI/wx.php'
-    url_gtp4 = 'https://api.lolimi.cn/API/AI/mfcat3.5.php?type=json'
+    url_gtp4 = 'https://api.lolimi.cn/API/AI/mfcat3.5.php?'
     url = url_wx
     message = ev.message
     if ev.where == 'group':
@@ -806,12 +806,12 @@ def chatGPT(b: bot, ev: event):
         else:
             return False
     # 发送post请求
-    response = requests.post(url, data={"msg": message}, timeout=time_out)
+    response = requests.post(url, data={"msg": message}, timeout=(20,60))
     if response.status_code == 200:
         try:
             # 获取响应内容
             if url == url_gtp4:
-                result = response.json()['data']
+                result = response.text
             else:
                 result = response.json()['data']['output']
             b.send_text(ev, result)
@@ -977,10 +977,10 @@ def getWeatherMaolinbian(b: bot, ev: event) -> bool:
         return False
     response = requests.post('https://api.lolimi.cn/API/tqtq/api.php?msg={}&b=1'.format(city))
     if response.status_code == 200:
-        data = response.json()['data'][data]
-        result = city + '最近三天天气如下：\n'
+        data = response.json()['data']['data']
+        result = city + '最近三天天气如下：'
         for i in data:
-            result = result + '{}，{}，{}，{}，空气质量{}\n'.format(i['Time'],i['temperature'],i['weather'],i['bearing'],i['air_quality'])
+            result = result + '\n{}，{}，{}，{}，空气质量{}'.format(i['Time'],i['temperature'],i['weather'],i['bearing'],i['air_quality'])
         b.send_text(ev, result)
     else:
         b.send_text(ev, '网站崩了，请求失败')
@@ -1042,7 +1042,7 @@ def interesting_feature(b: bot, ev: event) -> bool:
         at = {'type': 'At', 'target': ev.sender_id, 'display': ''}
         m1 = {'type': 'Plain', 'text': ' 欢迎加入本群！'}
         flower = {'type': 'Face', 'faceId': 63, 'name': '玫瑰'}
-        url_huanying = "file:///" + str(Path(img_root, 'other', 'huanying' + str(random.randint(1,5)) + '.jpg'))
+        url_huanying = "file:///" + str(Path(img_root, 'other', 'huanying' + str(random.randint(1,8)) + '.jpg'))
         huanying = {'type': 'Image', 'url': url_huanying}
         m2 = {'type': 'Plain', 'text': '发送\'菜单\'可查看本bot具有的功能哦'}
         doge = {'type': 'Face', 'faceId': 179, 'name': 'doge'}
@@ -1096,6 +1096,19 @@ def interesting_feature(b: bot, ev: event) -> bool:
     
     elif msg == '皮卡丘呢':
         b.send_text(ev, '那个带电的机器人吃饭去了')
+        return True
+    
+    elif msg == '组成' or msg == '查成分':
+        response=requests.post('https://api.lolimi.cn/API/name/api.php?msg={}'.format(ev.sender_name), timeout = time_out)
+        if response.status_code == 200:
+            re_json = response.json()
+            if re_json['code'] == 1:
+                b.send_text(ev, re_json['text'])
+            else:
+                b.send_text(ev, '参数错误')
+            return True
+        else:
+            b.send_text(ev, '请求失败')
         return True
 
 
