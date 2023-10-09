@@ -115,7 +115,7 @@ def normal_chat(b: bot, ev: event):
         return True
 
     if message == '可选角色':
-        b.send_text(ev, '目前可选语音角色如下：\n' + str(role).replace('\'', '') + '\n\n发送切换角色+角色名可以切换角色')
+        b.send_text(ev, '目前可选语音角色如下：\n' + str(role).replace('\'', '') + '\n\n发送\'切换角色 角色名\'可以切换角色')
         return True
     if ev.where == 'group':
         if not ev.at:
@@ -987,17 +987,6 @@ def getWeatherMaolinbian(b: bot, ev: event) -> bool:
     return True
 
 
-def getFaceImage(b: bot, ev: event) -> bool:
-    if not power['表情包']:
-        b.send_text(ev, '本群权限未开启')
-        return False
-    if '柴郡' == ev.message:
-        url_chaijun = sby_api + 'chai/c?key=sp4mVsMIBiBslhw56QfpHDXIkg'
-        getSendDelTempImage(b, ev, url=url_chaijun, data=None)
-        return True
-    return False
-
-
 # 按照某不愿透露姓名的群友要求，每天提醒打卡
 remind_list = [2655602003, 1056752345, 2540817538]
 
@@ -1043,6 +1032,21 @@ def interesting_feature(b: bot, ev: event) -> bool:
         m1 = {'type': 'Plain', 'text': ' 欢迎加入本群！'}
         flower = {'type': 'Face', 'faceId': 63, 'name': '玫瑰'}
         url_huanying = "file:///" + str(Path(img_root, 'other', 'huanying' + str(random.randint(1,8)) + '.jpg'))
+        try:
+            request = requests.post("http://q2.qlogo.cn/headimg_dl?dst_uin={}&spec=5".format(ev.sender_id), timeout = time_out)
+            file_name = Path(img_root, 'temp', 'temp.jpg')
+            if request.status_code == 200:
+                with file_name.open('wb') as file:
+                    file.write(response.content)
+                    url_huanying = "file:///" + str(file_name)
+            else:
+                request = requests.post("https://zj.v.api.aa1.cn/api/qqtx-jm/?qq=" + str(ev.sender_id), timeout = time_out)
+                if request.status_code == 200:
+                    result = request.json()
+                    if result['code'] == 1:
+                        url_huanying = result['img']
+        except Exception as e:
+            print('[interesting_feature] join group error: ' + str(e))
         huanying = {'type': 'Image', 'url': url_huanying}
         m2 = {'type': 'Plain', 'text': '发送\'菜单\'可查看本bot具有的功能哦'}
         doge = {'type': 'Face', 'faceId': 179, 'name': 'doge'}
@@ -1110,6 +1114,25 @@ def interesting_feature(b: bot, ev: event) -> bool:
         else:
             b.send_text(ev, '请求失败')
         return True
+    
+    elif msg == 'kknd' or msg == '我的':
+        url_head = ''
+        request = requests.post("http://q2.qlogo.cn/headimg_dl?dst_uin={}&spec=5".format(ev.sender_id), timeout = time_out)
+        file_name = Path(img_root, 'temp', 'temp.jpg')
+        if request.status_code == 200:
+            with file_name.open('wb') as file:
+                file.write(response.content)
+                url_head = "file:///" + str(file_name)
+        else:
+            request = requests.post("https://zj.v.api.aa1.cn/api/qqtx-jm/?qq=" + str(ev.sender_id), timeout = time_out)
+            if request.status_code == 200:
+                result = request.json()
+                if result['code'] == 1:
+                    url_head = result['img']
+        if url_head:
+            b.send_image(ev, url_head)
+
+
 
 
     return False
