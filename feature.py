@@ -16,7 +16,7 @@ import math
 
 # 加载本地图库,在当前文件夹下必须有一个image文件夹
 img_root = Path(Path.cwd(), 'image')
-time_out = (10, 30)
+time_out = (30, 60)
 
 # 2.0版本新增桑帛云api
 sby_api = 'https://api.lolimi.cn/API/'
@@ -270,8 +270,7 @@ poet_group = [780594692, 584267180, 334829507]
 
 def send_poetry(b: bot):
     try:
-        token = get_token()
-        message = generate_recom(get_poetry(token))
+        message = generate_recom(get_poetry())
     except Exception as e:
         print('[feature send_poetry] error:' + str(e))
         return
@@ -415,7 +414,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
             ctrl.status = 'pre'
             b.send_text(ev,
                         '棋局初始化成功，可选身份有红1，红2，黑1，黑2。发送例如\'加入棋局 红1\'可加入游戏执红1，使用标准棋谱' +
-                        '命令行棋\n\n·其他命令有：认输，提和，悔棋，退出棋局，掀棋盘(不建议)\n\n·命令\'请求接手@somebody\'：' +
+                        '命令行棋\n\n·其他命令有：认输，提和，悔棋，退出棋局，掀棋盘(不建议)，盲棋（控制盲棋开关），棋盘（打印当前棋盘）\n\n·命令\'请求接手@somebody\'：' +
                         '棋手请求外援，被艾特的人发送\'接手\'即可完成交接')
         elif ctrl.status == 'pre':
             players = chess_dic[location]['player']
@@ -637,7 +636,10 @@ def chinese_chess(b: bot, ev: event) -> bool:
             current_player.used_time += control.current_step_time
             control.paint_map()
             url_ = "file:///" + str(control.path)
-            b.send_image(ev, url_)
+            if control.blind_chess:
+                b.send_text(ev, current_player.name + ' 落子成功')
+            else:
+                b.send_image(ev, url_)
             if control.path.exists():
                 control.path.unlink()
             over = control.game_over
@@ -768,6 +770,18 @@ def chinese_chess(b: bot, ev: event) -> bool:
 
     elif msg == '棋盘样式':
         b.send_text(ev, '可选棋盘样式名字如下：' + MapStyle.toString() + '\n\n发送\'更换棋盘 棋盘名\'即可更换棋盘哦~')
+        return True
+    
+    elif msg == '盲棋':
+        control = get_control()
+        if control.status == 'not_begin':
+            return True
+        is_player, idx = is_sender_in_player()
+        if not is_player:
+            b.send_text(ev, ev.sender_name + '，你还没有加入，不可以进行此操作')
+            return True
+        control.blind_chess = not control.blind_chess
+        b.send_text(ev, '盲棋' + '开' if control.blind_chess else '关')
         return True
 
     return False
@@ -1009,14 +1023,8 @@ def remind_work_over(b: bot):
 
 def interesting_feature(b: bot, ev: event) -> bool:
     msg = ev.message
-    if msg == '二次元的我':
-        return True
-    elif msg == '阿':
+    if msg == '阿':
         b.send_text(ev, '巴~')
-        return True
-    elif '柴郡' == msg:
-        url_chaijun = sby_api + 'chai/c?key=sp4mVsMIBiBslhw56QfpHDXIkg'
-        getSendDelTempImage(b, ev, url=url_chaijun, data=None)
         return True
     elif 'jvav' == msg or 'Jvav' == msg or '张浩扬' == msg or '张浩扬博士' == msg:
         file_name = Path(img_root, 'other', 'jvav.jpg')

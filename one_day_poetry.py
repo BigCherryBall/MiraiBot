@@ -2,19 +2,16 @@ import requests
 import datetime
 
 
-def get_token():
-    token_url = "https://v2.jinrishici.com/token"
-    req = requests.get(token_url)
-    response_dict = req.json()
-    return response_dict['data']
+token_value = 'B1l2QfCZWRLPulrnMpuXuIKArnXuMMuo'
 
-
-def get_poetry(token_value):
+def get_poetry():
     poetry_url = "https://v2.jinrishici.com/sentence"
     headers = {
         "X-User-Token": token_value
     }
     response = requests.get(poetry_url, headers=headers)
+    if response.status_code != 200:
+        return ""
     poetry_dict = response.json()
     # print(poetry_dict)
     poetry_content_list = poetry_dict["data"]["origin"]["content"]
@@ -53,5 +50,7 @@ def generate_recom(poetry_recommendation):
 
 
 if __name__ == '__main__':
-    token_value = get_token()
-    print(generate_recom(get_poetry(token_value)))
+    
+    r = requests.get('https://v2.jinrishici.com/info')
+    if r.status_code == 200:
+        print(r.json())

@@ -38,6 +38,8 @@ class GameControl:
         self.chess_dir = Path(work_dir, 'chinese_chess', 'image', 'chess')
         # 提示路径
         self.reminder_dir = Path(work_dir, 'chinese_chess', 'image', 'move_remind')
+        # 是否盲棋
+        self.blind_chess: bool = False
         # 棋子对象池,所有棋盘共享,类的内部可访问，外部无法访问。只读不改。
         self.__chess_list = [
             # -------------黑方初始化------------------
