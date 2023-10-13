@@ -118,6 +118,9 @@ class bot:
     def _step_deal_data(self, i):
         try:
             ev = event(i)
+            if ev.where != 'group':
+                return
+
             # 先判定是不是支持类型的事件
             if not ev.type:
                 return

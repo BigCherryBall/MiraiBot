@@ -677,8 +677,11 @@ def chinese_chess(b: bot, ev: event) -> bool:
         try:
             control.back_to_last_step()
             control.paint_map()
-            url = "file:///" + str(control.path)
-            b.send_image(ev, url=url)
+            if control.blind_chess:
+                b.send_text(ev, ev.sender_name + '，悔棋成功')
+            else:
+                url = "file:///" + str(control.path)
+                b.send_image(ev, url=url)
         except Exception as e:
             if isinstance(e, ChessExcept):
                 b.send_text(ev, str(e))
@@ -781,7 +784,7 @@ def chinese_chess(b: bot, ev: event) -> bool:
             b.send_text(ev, ev.sender_name + '，你还没有加入，不可以进行此操作')
             return True
         control.blind_chess = not control.blind_chess
-        b.send_text(ev, '盲棋' + '开' if control.blind_chess else '关')
+        b.send_text(ev, '盲棋' + ('开' if control.blind_chess else '关'))
         return True
     
     elif msg == '棋盘':
