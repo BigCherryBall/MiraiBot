@@ -5,14 +5,6 @@ class Type:
     join = 'join'
 
 
-class Sort:
-    Text = '文'
-    Picture = '图'
-    T_P = '文图'
-    P_T = '图文'
-    T_P_T = '文图文'
-
-
 class event:
     def __init__(self, i):
         self.message = ''
