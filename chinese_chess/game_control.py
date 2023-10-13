@@ -10,6 +10,12 @@ from pathlib import Path
 from PIL import Image
 
 
+class Status:
+    not_begin = 'not_begin'
+    pre = 'pre'
+    has_began = 'has_began'
+
+
 class GameControl:
     def __init__(self, seed: int = random.randint(0, 10000)):
         # 空棋盘

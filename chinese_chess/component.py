@@ -1,4 +1,3 @@
-from pathlib import Path
 
 
 class Vector2:
@@ -12,8 +11,3 @@ class Vector2:
     def __str__(self):
         return str((self.x, self.y))
 
-
-class ChessConfig:
-    def __init__(self, chess_dir: Path, map_dir: Path):
-        self.chess_dir = chess_dir
-        self.map_dir = map_dir

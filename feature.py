@@ -4,7 +4,7 @@ import time
 from bot import bot
 from chinese_chess.chess_except import ChessExcept
 from chinese_chess.enum import MapStyle, Team
-from chinese_chess.game_control import GameControl
+from chinese_chess.game_control import GameControl,Status
 from event import Type, event
 from one_day_poetry import *
 from collections import defaultdict
@@ -640,8 +640,8 @@ def chinese_chess(b: bot, ev: event) -> bool:
                 b.send_text(ev, current_player.name + ' 落子成功')
             else:
                 b.send_image(ev, url_)
-            if control.path.exists():
-                control.path.unlink()
+            # if control.path.exists():
+                # control.path.unlink()
             over = control.game_over
             if over:
                 win = ''
@@ -783,6 +783,23 @@ def chinese_chess(b: bot, ev: event) -> bool:
         control.blind_chess = not control.blind_chess
         b.send_text(ev, '盲棋' + '开' if control.blind_chess else '关')
         return True
+    
+    elif msg == '棋盘':
+        control = get_control()
+        if control.status == 'not_begin':
+            return True
+        is_player, idx = is_sender_in_player()
+        if not is_player:
+            return True
+        if control.status == Status.pre:
+            b.send_text(ev, '棋局还没开始，无法打印棋盘')
+            return True
+        if control.status == Status.has_began:
+            pic = control.path
+            b.send_image(ev, 'file:///' + str(pic))
+        
+        return True
+        
 
     return False
 
