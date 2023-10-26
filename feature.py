@@ -270,7 +270,7 @@ poet_group = [780594692, 584267180, 334829507]
 
 def send_poetry(b: bot):
     try:
-        message = generate_recom(get_poetry())
+        message = my_poet(get_poetry())
     except Exception as e:
         print('[feature send_poetry] error:' + str(e))
         return
