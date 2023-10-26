@@ -49,22 +49,54 @@ def generate_recom(poetry_recommendation):
     return message
 
 
-def my_poet() -> str:
-    content = "今日的推荐诗词是"
-    title = ''
-    count = 0
-    with open("poetry.txt", "r") as file:
-        for line in file:
-            count += 1
-            if count == 1:
-                title = line.replace('\n','')
-            elif count == 2:
-                content += line.replace('\n','') + '的' + title + '：\n'
-            elif line[0:3] == 'end':
-                break
-            else:
-                content += line
-    return content
+class poetry:
+    def __init__(self):
+        self.title = ''
+        self.author = ''
+        self.content = ''
+    
+    def __str__(self) -> str:
+        return self.title + '\n' + self.author + '\n' + self.content
+    
+    def get_my_poetry(self):
+        return "今日的推荐诗词是" + self.author + '的' + self.title + '：' + self.content
+
+poetry_list: list[poetry] = []
+current_poetry: poetry = None
+count = 0
+begin = False
+
+with open("poetry.txt", "r") as file:
+    for line in file:
+        if line == '#begin\n':
+            current_poetry = poetry()
+            begin = True
+            count = 1
+            poetry_list.append(current_poetry)
+        elif begin and count == 1:
+            current_poetry.title = line.replace('\n','')
+            count = 2
+        elif begin and count == 2:
+            current_poetry.author = line.replace('\n','')
+            count = 0
+        elif line == '#end' or line == '#end\n':
+            begin = False
+            current_poetry = None
+        elif begin:
+            current_poetry.content += line
+        else:
+            continue
+    
+for i in poetry_list:
+    print(i)
+    print('--------------------------------------')
+
+idx = 0
+def get_poetry() -> str:
+    return generate_recom(poetry_list[idx % len(poetry_list)].get_my_poetry())
+
+
+
 
 if __name__ == '__main__':
-    print(generate_recom(my_poet()))
+    print('over')

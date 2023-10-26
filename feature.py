@@ -6,7 +6,8 @@ from chinese_chess.chess_except import ChessExcept
 from chinese_chess.enum import MapStyle, Team
 from chinese_chess.game_control import GameControl,Status
 from event import Type, event
-from one_day_poetry import *
+import requests
+from one_day_poetry import get_poetry
 from collections import defaultdict
 from pathlib import Path
 from tool import get_time_str as t2s
@@ -270,7 +271,7 @@ poet_group = [780594692, 584267180, 334829507]
 
 def send_poetry(b: bot):
     try:
-        message = my_poet(get_poetry())
+        message = get_poetry()
     except Exception as e:
         print('[feature send_poetry] error:' + str(e))
         return
