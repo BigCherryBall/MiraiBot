@@ -50,15 +50,21 @@ def generate_recom(poetry_recommendation):
 
 
 def my_poet() -> str:
-    poety = '今日的推荐诗词是现代诗人罗伯特·弗罗斯特的《未选择的路》:\n\n\
-黄色的树林里分出两条路，\n可惜我不能同时去涉足，\n我在那路口久久伫立，\n我向着一条路极目望去，\n直到它消失在丛林深处。\n\
-但我却选了另外一条路，\n它荒草萋萋，十分幽寂，\n显得更诱人、更美丽；\n虽然在这两条小路上，\n都很少留下旅人的足迹；\n\
-虽然那天清晨落叶满地，\n两条路都未经脚印污染。\n呵，留下一条路等改日再见！\n但我知道路径延绵无尽头，\n恐怕我难以再回返。\n\
-也许多少年后在某个地方，\n我将轻声叹息把往事回顾：\n一片树林里分出两条路，\n而我选了人迹更少的一条，\n从此决定了我一生的道路。'
-    return generate_recom(poety)
+    content = "今日的推荐诗词是"
+    title = ''
+    count = 0
+    with open("poetry.txt", "r") as file:
+        for line in file:
+            count += 1
+            if count == 1:
+                title = line.replace('\n','')
+            elif count == 2:
+                content += line.replace('\n','') + '的' + title + '：\n'
+            elif line[0:3] == 'end':
+                break
+            else:
+                content += line
+    return content
 
 if __name__ == '__main__':
-    
-    r = requests.get('https://v2.jinrishici.com/info')
-    if r.status_code == 200:
-        print(r.json())
+    print(generate_recom(my_poet()))

@@ -276,7 +276,7 @@ def send_poetry(b: bot):
         return
     print(message)
     for group_id in poet_group:
-        b.send_group_text(group_id, message + "\n\n发送菜单即可查看现有功能喵~")
+        b.send_group_text(group_id, message + "\n发送菜单即可查看现有功能喵~")
         time.sleep(1)
 
 
