@@ -72,27 +72,29 @@ with open("poetry.txt", "r") as file:
             current_poetry = poetry()
             begin = True
             count = 1
-            poetry_list.append(current_poetry)
+        elif line == '#end\n' or line == '#end':
+            begin = False
+            current_poetry = None
+            count = 0
         elif begin and count == 1:
             current_poetry.title = line.replace('\n','')
             count = 2
         elif begin and count == 2:
+            poetry_list.append(current_poetry)
             current_poetry.author = line.replace('\n','')
-            count = 0
-        elif line == '#end' or line == '#end\n':
-            begin = False
-            current_poetry = None
-        elif begin:
+            count = 3
+        elif begin and count == 3:
             current_poetry.content += line
         else:
             continue
     
-for i in poetry_list:
-    print(i)
-    print('--------------------------------------')
 
-idx = 0
+print('----------------有{}----------------------'.format(len(poetry_list)))
+
+idx = 3
 def get_poetry() -> str:
+    global idx
+    idx +=1
     return generate_recom(poetry_list[idx % len(poetry_list)].get_my_poetry())
 
 
@@ -100,3 +102,4 @@ def get_poetry() -> str:
 
 if __name__ == '__main__':
     print('over')
+

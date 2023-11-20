@@ -925,8 +925,7 @@ def genshinWeaponImage(b: bot, ev: event) -> bool:
     return True
 
 
-image_list = ['订婚', '玩原神', '处男', '泡妞', '抱着哭', '陪睡劵', '涩涩卡', '完美', '吃', '杜蕾斯', '女装协议', '舔',
-              '击剑', ]
+image_list = []
 
 
 def headPicture2Image(b: bot, ev: event) -> bool:
@@ -1057,10 +1056,12 @@ def interesting_feature(b: bot, ev: event) -> bool:
         return True
     # 欢迎新人
     elif ev.type == Type.join:
+        print("join at ",ev.location_id)
         at = {'type': 'At', 'target': ev.sender_id, 'display': ''}
         m1 = {'type': 'Plain', 'text': ' 欢迎加入本群！'}
         flower = {'type': 'Face', 'faceId': 63, 'name': '玫瑰'}
         url_huanying = "file:///" + str(Path(img_root, 'other', 'huanying' + str(random.randint(1,8)) + '.jpg'))
+        '''
         try:
             request = requests.post("http://q2.qlogo.cn/headimg_dl?dst_uin={}&spec=5".format(ev.sender_id), timeout = time_out)
             file_name = Path(img_root, 'temp', 'temp.jpg')
@@ -1075,7 +1076,7 @@ def interesting_feature(b: bot, ev: event) -> bool:
                     if result['code'] == 1:
                         url_huanying = result['img']
         except Exception as e:
-            print('[interesting_feature] join group error: ' + str(e))
+            print('[interesting_feature] join group error: ' + str(e))'''
         huanying = {'type': 'Image', 'url': url_huanying}
         m2 = {'type': 'Plain', 'text': '发送\'菜单\'可查看本bot具有的功能哦'}
         doge = {'type': 'Face', 'faceId': 179, 'name': 'doge'}
