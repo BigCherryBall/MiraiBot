@@ -39,6 +39,8 @@ class bot:
         try:
             self.conn.request(method, url, js)
             response = self.conn.getresponse()
+        except Exception as e:
+            print('__conn_mirai__ error: ', str(e))
         finally:
             self.lock.release()
             return response

@@ -190,7 +190,7 @@ def change_role(b: bot, ev: event):
 
 
 power = {'总': True, "菜单": True, "聊天": True, '发图': True, '防撤回': False, '象棋': True, '原神': True, '表情包': False,
-         '角色扮演': True}
+         '角色扮演': True, '每日诗词': False, }
 
 
 def menu(b: bot, ev: event):
@@ -270,6 +270,8 @@ poet_group = [780594692, 584267180, 334829507]
 
 
 def send_poetry(b: bot):
+    if not power['每日诗词']:
+        return
     try:
         message = get_poetry()
     except Exception as e:
@@ -1061,22 +1063,22 @@ def interesting_feature(b: bot, ev: event) -> bool:
         m1 = {'type': 'Plain', 'text': ' 欢迎加入本群！'}
         flower = {'type': 'Face', 'faceId': 63, 'name': '玫瑰'}
         url_huanying = "file:///" + str(Path(img_root, 'other', 'huanying' + str(random.randint(1,8)) + '.jpg'))
-        '''
+        
         try:
-            request = requests.post("http://q2.qlogo.cn/headimg_dl?dst_uin={}&spec=5".format(ev.sender_id), timeout = time_out)
+            request = requests.post("http://q2.qlogo.cn/headimg_dl?dst_uin={}&spec=5".format(ev.sender_id), timeout = (3,5))
             file_name = Path(img_root, 'temp', 'temp.jpg')
             if request.status_code == 200:
                 with file_name.open('wb') as file:
                     file.write(response.content)
                     url_huanying = "file:///" + str(file_name)
             else:
-                request = requests.post("https://zj.v.api.aa1.cn/api/qqtx-jm/?qq=" + str(ev.sender_id), timeout = time_out)
+                request = requests.post("https://zj.v.api.aa1.cn/api/qqtx-jm/?qq=" + str(ev.sender_id), timeout = (3, 5))
                 if request.status_code == 200:
                     result = request.json()
                     if result['code'] == 1:
                         url_huanying = result['img']
         except Exception as e:
-            print('[interesting_feature] join group error: ' + str(e))'''
+            print('[interesting_feature] join group error: ' + str(e))
         huanying = {'type': 'Image', 'url': url_huanying}
         m2 = {'type': 'Plain', 'text': '发送\'菜单\'可查看本bot具有的功能哦'}
         doge = {'type': 'Face', 'faceId': 179, 'name': 'doge'}
@@ -1145,7 +1147,7 @@ def interesting_feature(b: bot, ev: event) -> bool:
             b.send_text(ev, '请求失败')
         return True
     
-    elif msg == 'kknd' or msg == '我的':
+    elif msg == '我的':
         url_head = ''
         request = requests.post("http://q2.qlogo.cn/headimg_dl?dst_uin={}&spec=5".format(ev.sender_id), timeout = time_out)
         file_name = Path(img_root, 'temp', 'temp.jpg')
@@ -1161,6 +1163,12 @@ def interesting_feature(b: bot, ev: event) -> bool:
                     url_head = result['img']
         if url_head:
             b.send_image(ev, url_head)
+            return True
+    
+    elif msg == '涩涩' or msg == '色色':
+        b.send_text(ev, '性盛致灾，割以永治')
+        return True
+
 
 
 
